@@ -1,86 +1,155 @@
 # ScriptForge AI
 
-ScriptForge AI, 中文名“剧本工坊”，是面向小说作者的 AI 辅助剧本创作工具。本项目参加 2026 年 6 月 5 日 00:00 至 6 月 7 日 23:59 的 72 小时作品开发比赛，选择题目三：AI 小说转剧本工具。
+ScriptForge AI（剧本工坊）是一个面向小说作者的 AI 小说转剧本工具。项目目标是把 3 个章节以上的小说文本转换为结构化、可编辑、可校验的剧本草稿，帮助作者更快进入二次打磨阶段。
 
-## Project Positioning
+本项目参加 2026 年 6 月 5 日至 2026 年 6 月 7 日的 72 小时作品开发比赛，当前仓库按任务阶段逐步推进实现。
 
-许多小说作者希望把已有作品改编成剧本，但剧本结构、场景拆分、角色台词、动作描述和格式规范都会提高改编门槛。ScriptForge AI 的目标是把 3 个章节以上的小说文本转换为结构化、可编辑、可校验的 YAML 剧本初稿，让作者可以更快进入二次打磨阶段。
+## Current Status
 
-## Target Users
+当前仓库已经完成：
 
-- 小说作者：希望快速获得剧本初稿，用于影视、短剧、广播剧或互动叙事改编。
-- 编剧和内容策划：希望从长文本中提炼场景、角色、冲突和节奏。
-- 小团队创作者：希望用结构化格式沉淀可复用的剧本资产。
+- T01：项目文档、任务边界、PR 模板和交付约束
+- T02：`@scriptforge/shared` 共享类型、JSON Schema 常量、示例剧本对象
+- T03：`@scriptforge/api` mock 小说转剧本 API
 
-## Core Features
+当前仓库尚未实现：
 
-- 输入 3 个章节以上的小说文本。
-- 生成结构化 YAML 剧本初稿。
-- 展示场景板、角色小传和校验结果。
-- 支持 YAML 编辑、导出和改编报告。
-- 提供 Schema Validation，帮助用户发现结构缺失和格式错误。
+- 前端工作台
+- 真实 LLM 调用
+- YAML parser
+- AJV validator runtime
+- 历史记录
+- 用户系统
+- CI
+- Docker
+- streaming
 
-## MVP Scope
+## Workspace Packages
 
-MVP 聚焦“小说章节输入到可校验 YAML 剧本初稿”的完整主链路：
+- `packages/shared`
+  - 提供 `ScreenplayDocument`、`AdaptationMode` 等 TypeScript 类型
+  - 提供剧本 JSON Schema 常量
+  - 提供 `sampleScreenplay` 示例对象
+- `apps/api`
+  - 提供 Fastify mock API
+  - 复用 `@scriptforge/shared` 中的类型和示例剧本
 
-- 章节输入工作台。
-- mock conversion API。
-- YAML 展示与校验结果。
-- LLM client 接入。
-- YAML parser、validator 和 consistency checks。
-- Scene Board 与 Character Bible。
-- YAML 导出与 adaptation report。
+## Mock API
 
-## Innovation Points
+### `GET /health`
 
-- 以 YAML Schema 作为剧本结构契约，降低 AI 输出不可控风险。
-- 将小说改编拆成章节分析、场景生成、角色小传、质量评分和改写建议等可解释步骤。
-- 同时面向 Demo 表达和工程质量，确保主分支持续可运行、PR 小步提交。
-- 把“可编辑”和“可校验”作为核心体验，而不是只输出一段不可维护的文本。
+返回：
 
-## Planned Tech Stack
+```json
+{
+  "ok": true,
+  "service": "scriptforge-api"
+}
+```
 
-技术栈将在后续任务中继续扩展，当前 T02 只落地共享契约层，不创建前端或后端应用，不实现业务流程。
+### `POST /api/conversions/mock`
 
-- Frontend: planned web workbench for chapter input, YAML preview, validation, Scene Board, and Character Bible.
-- Backend: planned conversion API, LLM orchestration, validation, scoring, and export services.
-- Shared: `@scriptforge/shared` workspace package now carries the initial TypeScript screenplay types, JSON Schema contract, and sample screenplay fixture introduced in T02.
-- Docs: schema design document, architecture notes, demo guide, and development rules.
+请求体：
 
-## Current Implemented Foundation
+```json
+{
+  "title": "River Street Mystery",
+  "chapters": [
+    {
+      "id": "chapter_01",
+      "title": "Dawn Letter",
+      "content": "Lin Xia receives a letter at dawn."
+    },
+    {
+      "id": "chapter_02",
+      "title": "Market Rumors",
+      "content": "She searches the market for clues."
+    },
+    {
+      "id": "chapter_03",
+      "title": "Watchtower Rain",
+      "content": "She confronts the captain at night."
+    }
+  ],
+  "adaptation_mode": "dramatic"
+}
+```
 
-The repository currently includes the T02 shared contract layer only:
+请求校验规则：
 
-- `@scriptforge/shared` provides `ScreenplayDocument` TypeScript types.
-- `@scriptforge/shared` exports a JSON Schema constant for future YAML validation work.
-- `@scriptforge/shared` includes a sample screenplay object that demonstrates the contract shape.
+- `title` 必须是非空字符串
+- `chapters` 至少 3 个
+- 每个 chapter 都必须有非空 `id`、`title`、`content`
+- `adaptation_mode` 必须是 `faithful`、`dramatic`、`short_drama` 之一
 
-This task does not add a frontend app, backend app, parser, validator runtime, or LLM integration yet.
+错误响应格式统一为：
+
+```json
+{
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "..."
+  }
+}
+```
+
+成功响应包含：
+
+- `conversion_id`
+- `status`
+- `mode`
+- `input_summary`
+- `screenplay`
+- `warnings`
+- `mock: true`
+
+说明：
+
+- 返回结果明确标记为 mock 数据
+- 不会伪装成真实 AI 输出
+- `screenplay` 基于 `@scriptforge/shared` 中的 `sampleScreenplay`
+
+## Development
+
+安装依赖：
+
+```bash
+corepack.cmd pnpm install
+```
+
+启动 mock API：
+
+```bash
+corepack.cmd pnpm --filter @scriptforge/api dev
+```
+
+默认监听地址：
+
+```text
+http://127.0.0.1:3001
+```
 
 ## Verification
 
-Current contract-level verification commands:
+T03 对应验证命令：
 
 ```bash
-pnpm install
-pnpm --filter @scriptforge/shared typecheck
+corepack.cmd pnpm install
+corepack.cmd pnpm --filter @scriptforge/shared typecheck
+corepack.cmd pnpm --filter @scriptforge/api typecheck
+corepack.cmd pnpm --filter @scriptforge/api test
 ```
 
-## Startup Placeholder
+## Dependency Notes
 
-启动方式将在前端、后端和验证脚本创建后补充。当前仓库处于 T02 共享契约阶段，还没有可运行应用；当前仅支持共享包依赖安装与类型检查。
+本次 T03 新增依赖及用途：
 
-## Development Workflow
+- `fastify`：HTTP API 服务，承载 `GET /health` 和 `POST /api/conversions/mock`
+- `vitest`：API 测试
+- `tsx`：本地运行 TypeScript API
+- `typescript`：类型检查
+- `@types/node`：为 Fastify 入口、`process.env` 和测试环境提供 Node.js 类型定义
 
-- 一次只做一个任务。
-- 每个 PR 只做一件事，并保持标题和描述清晰。
-- PR 描述必须包含功能描述、实现思路和测试方式。
-- main 分支必须始终保持可运行。
-- 禁止最后一天一次性导入，必须持续 commit 和 PR。
-- 引入第三方依赖时必须同步更新 README。
-- 合并前必须完成与任务范围匹配的验证。
+## Task Boundary
 
-## Current Task Boundary
-
-T02 defines the shared screenplay contract only. This stage adds workspace scaffolding, TypeScript types, JSON Schema, a sample screenplay object, and schema documentation. It does not add frontend, backend, parser, validator runtime, LLM integration, export, test framework, or CI.
+当前 README 只描述已经存在的真实能力。T03 的边界仅包括 mock 后端转换链路，不包含真实 LLM、前端、YAML 解析、AJV 运行时校验、历史记录、用户系统、CI、Docker 或 streaming。
