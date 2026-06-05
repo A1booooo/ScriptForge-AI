@@ -3,9 +3,12 @@
   "private": true,
   "packageManager": "pnpm@11.5.1",
   "scripts": {
-    "typecheck": "pnpm --filter @scriptforge/shared typecheck && pnpm --filter @scriptforge/api typecheck",
+    "typecheck": "pnpm --filter @scriptforge/shared typecheck && pnpm --filter @scriptforge/api typecheck && pnpm --filter @scriptforge/web typecheck",
     "dev:api": "pnpm --filter @scriptforge/api dev",
-    "test:api": "pnpm --filter @scriptforge/api test"
+    "dev:web": "pnpm --filter @scriptforge/web dev",
+    "build:web": "pnpm --filter @scriptforge/web build",
+    "test:api": "pnpm --filter @scriptforge/api test",
+    "test:web": "pnpm --filter @scriptforge/web test"
   },
   "devDependencies": {
     "typescript": "^5.5.4"
