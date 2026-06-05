@@ -1,6 +1,6 @@
 # Screenplay YAML Schema
 
-This document defines the first contract for ScriptForge AI screenplay drafts. T02 only establishes the shared structure contract for future YAML generation and validation. It does not add a YAML parser, validator runtime, API, or frontend flow.
+This document defines the screenplay contract used by ScriptForge AI drafts. T02 established the shared structure contract, and T07 adds a shared runtime YAML parser, JSON Schema validator, and consistency checks in `packages/shared`. The document still does not add a frontend validator UI or a new API endpoint by itself.
 
 ## Purpose
 
@@ -150,27 +150,29 @@ The current fields focus on likely review dimensions:
 
 ## Cross-Reference Rules
 
-T02 does not implement runtime validation, but the contract is designed for later checks:
+T07 now enforces these checks in the shared runtime, using only fields that already exist in the current schema:
 
 - every `id` should be a machine-readable identifier, such as `char_lin_xia`
 - every `scene.location_id` should match one `locations[].id`
 - every `scene.characters[]` and `dialogue[].character_id` should match one `characters[].id`
 - every `scene.chapter_refs[]` and `beats[].source_chapter_ids[]` should match one `metadata.source_chapters[].chapter_id`
 
-The shared package encodes these fields now so future parser and validator tasks can enforce them without redesigning the document shape.
+The shared package now enforces these fields without redesigning the document shape.
 
-## Current Implementation in T02
+## Current Implementation
 
-T02 adds:
+The current shared implementation includes:
 
 - TypeScript types for `ScreenplayDocument`
-- a JSON Schema constant for later YAML validation work
-- a sample screenplay object that satisfies the contract
-- shared package scaffolding for reuse in later tasks
+- the reusable `screenplayDocumentSchema` JSON Schema constant
+- the `sampleScreenplay` example object
+- `parseScreenplayYaml(yamlText)` for parsing YAML into an unknown candidate object
+- `validateScreenplayDocument(candidate)` for JSON Schema validation using the shared schema
+- `runScreenplayConsistencyChecks(document)` for reference and duplicate-id consistency checks
+- `validateScreenplayYaml(yamlText)` for parse -> schema -> consistency aggregation with normalized `ValidationIssue[]`
 
-T02 does not add:
+The current implementation intentionally does not add:
 
-- YAML parsing
-- AJV or any other validator runtime wiring
-- conversion APIs
-- frontend editors or viewers
+- a new public API endpoint
+- automatic wiring of the validator into the existing frontend main flow
+- YAML editing or export

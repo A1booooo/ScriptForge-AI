@@ -177,6 +177,10 @@ describe("App", () => {
     expect(screen.getByText("River Street Mystery Draft")).toBeInTheDocument();
     expect(screen.getByText("Preview Checks")).toBeInTheDocument();
     expect(screen.getAllByText(/schema_version/).length).toBeGreaterThan(0);
-    expect(screen.getByText("Full schema validator planned for later.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Preview Checks remains a lightweight panel. The shared validator runtime is not wired into this UI yet."
+      )
+    ).toBeInTheDocument();
   });
 });
