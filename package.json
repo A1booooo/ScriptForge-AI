@@ -4,6 +4,9 @@
   "packageManager": "pnpm@11.5.1",
   "scripts": {
     "typecheck": "pnpm --filter @scriptforge/shared typecheck && pnpm --filter @scriptforge/api typecheck && pnpm --filter @scriptforge/web typecheck",
+    "test": "pnpm run test:api && pnpm run test:web",
+    "build": "pnpm run build:web",
+    "verify": "pnpm run typecheck && pnpm run test && pnpm run build",
     "dev:api": "pnpm --filter @scriptforge/api dev",
     "dev:web": "pnpm --filter @scriptforge/web dev",
     "build:web": "pnpm --filter @scriptforge/web build",
