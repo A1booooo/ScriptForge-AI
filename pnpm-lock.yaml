@@ -11,6 +11,9 @@ importers:
       typescript:
         specifier: ^5.5.4
         version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.19)(jsdom@25.0.1)(lightningcss@1.32.0)
 
   apps/api:
     dependencies:
@@ -86,7 +89,14 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.19.19)(jsdom@25.0.1)(lightningcss@1.32.0)
 
-  packages/shared: {}
+  packages/shared:
+    dependencies:
+      ajv:
+        specifier: ^8.17.1
+        version: 8.20.0
+      yaml:
+        specifier: ^2.8.1
+        version: 2.9.0
 
 packages:
 

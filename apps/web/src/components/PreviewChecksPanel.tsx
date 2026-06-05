@@ -57,7 +57,7 @@ export function PreviewChecksPanel({ screenplay }: PreviewChecksPanelProps) {
       </div>
 
       <div className="border-b border-zinc-900 bg-black/20 px-5 py-3 text-sm leading-6 text-zinc-400">
-        Full schema validator planned for later.
+        Preview Checks remains a lightweight panel. The shared validator runtime is not wired into this UI yet.
       </div>
 
       <div className="space-y-3 px-5 py-5">
