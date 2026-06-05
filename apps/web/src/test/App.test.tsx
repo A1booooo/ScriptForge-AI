@@ -176,6 +176,12 @@ describe("App", () => {
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText("River Street Mystery Draft")).toBeInTheDocument();
     expect(screen.getByText("Preview Checks")).toBeInTheDocument();
+    expect(screen.getByText("Scene Board")).toBeInTheDocument();
+    expect(screen.getByText("Character Bible")).toBeInTheDocument();
+    expect(
+      screen.getAllByText("Rumors Under Lantern Light").length
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText("Lin Xia").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/schema_version/).length).toBeGreaterThan(0);
     expect(
       screen.getByText(
