@@ -1,0 +1,11 @@
+{
+  "name": "scriptforge-ai",
+  "private": true,
+  "packageManager": "pnpm@11.5.1",
+  "scripts": {
+    "typecheck": "pnpm --filter @scriptforge/shared typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
