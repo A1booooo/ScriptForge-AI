@@ -3,7 +3,9 @@
   "private": true,
   "packageManager": "pnpm@11.5.1",
   "scripts": {
-    "typecheck": "pnpm --filter @scriptforge/shared typecheck"
+    "typecheck": "pnpm --filter @scriptforge/shared typecheck && pnpm --filter @scriptforge/api typecheck",
+    "dev:api": "pnpm --filter @scriptforge/api dev",
+    "test:api": "pnpm --filter @scriptforge/api test"
   },
   "devDependencies": {
     "typescript": "^5.5.4"
