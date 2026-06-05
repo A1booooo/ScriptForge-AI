@@ -1,4 +1,7 @@
-import type { AdaptationMode } from "@scriptforge/shared";
+import type {
+  AdaptationMode,
+  ScreenplayDocument
+} from "@scriptforge/shared";
 
 export interface ChapterFormValue {
   id: string;
@@ -28,11 +31,7 @@ export interface MockConversionResponse {
     chapter_count: number;
     chapter_ids: string[];
   };
-  screenplay: {
-    metadata: {
-      title: string;
-    };
-  };
+  screenplay: ScreenplayDocument;
   warnings: string[];
   mock: true;
 }

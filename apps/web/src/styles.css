@@ -52,3 +52,8 @@ textarea {
 .panel-enter {
   animation: panel-enter 220ms ease-out;
 }
+
+pre,
+code {
+  font-variant-ligatures: none;
+}

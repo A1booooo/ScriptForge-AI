@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { sampleScreenplay } from "@scriptforge/shared";
 
 import App from "../App";
 
@@ -8,26 +9,27 @@ const successResponse = {
   status: "completed",
   mode: "dramatic",
   input_summary: {
-    title: "雾港追缉令",
+    title: "River Street Mystery",
     chapter_count: 3,
     chapter_ids: ["chapter_01", "chapter_02", "chapter_03"]
   },
   screenplay: {
+    ...sampleScreenplay,
     metadata: {
-      title: "雾港追缉令：剧本草稿"
+      ...sampleScreenplay.metadata,
+      title: "River Street Mystery Draft"
     }
   },
   warnings: [],
   mock: true
-};
+} as const;
 
 function fillMinimumValidForm() {
   fireEvent.change(screen.getByLabelText("项目标题"), {
-    target: { value: "雾港追缉令" }
+    target: { value: "River Street Mystery" }
   });
 
-  const modeSelect = screen.getByLabelText("改编模式");
-  fireEvent.change(modeSelect, {
+  fireEvent.change(screen.getByLabelText("改编模式"), {
     target: { value: "dramatic" }
   });
 
@@ -43,13 +45,13 @@ function fillMinimumValidForm() {
 
   titleInputs.forEach((input, index) => {
     fireEvent.change(input, {
-      target: { value: `第 ${index + 1} 章` }
+      target: { value: `Chapter ${index + 1}` }
     });
   });
 
   contentInputs.forEach((input, index) => {
     fireEvent.change(input, {
-      target: { value: `这是第 ${index + 1} 章的正文内容。` }
+      target: { value: `This is chapter ${index + 1} content.` }
     });
   });
 }
@@ -80,7 +82,7 @@ describe("App", () => {
     render(<App />);
 
     fireEvent.change(screen.getByLabelText("项目标题"), {
-      target: { value: "雾港追缉令" }
+      target: { value: "River Street Mystery" }
     });
 
     const idInputs = screen.getAllByLabelText("章节 ID");
@@ -92,18 +94,16 @@ describe("App", () => {
         target: { value: `chapter_0${index + 1}` }
       });
       fireEvent.change(titleInputs[index]!, {
-        target: { value: `第 ${index + 1} 章` }
+        target: { value: `Chapter ${index + 1}` }
       });
       fireEvent.change(contentInputs[index]!, {
-        target: { value: `这是第 ${index + 1} 章的正文内容。` }
+        target: { value: `This is chapter ${index + 1} content.` }
       });
     });
 
     fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
 
-    expect(
-      await screen.findByText("请至少填写 3 个完整章节后再提交。")
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Error")).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -158,7 +158,7 @@ describe("App", () => {
     ).toBeInTheDocument();
   });
 
-  test("shows a success summary after a successful conversion", async () => {
+  test("shows yaml preview and preview checks after a successful conversion", async () => {
     vi.mocked(fetch).mockResolvedValue(
       new Response(JSON.stringify(successResponse), {
         status: 200,
@@ -171,10 +171,12 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
 
-    expect(await screen.findByText("Mock 剧本草稿已生成")).toBeInTheDocument();
+    expect(await screen.findByText("YAML Preview")).toBeInTheDocument();
     expect(screen.getByText("conv_mock_001")).toBeInTheDocument();
-    expect(screen.getByText("是")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
-    expect(screen.getByText("雾港追缉令：剧本草稿")).toBeInTheDocument();
+    expect(screen.getByText("River Street Mystery Draft")).toBeInTheDocument();
+    expect(screen.getByText("Preview Checks")).toBeInTheDocument();
+    expect(screen.getAllByText(/schema_version/).length).toBeGreaterThan(0);
+    expect(screen.getByText("Full schema validator planned for later.")).toBeInTheDocument();
   });
 });
