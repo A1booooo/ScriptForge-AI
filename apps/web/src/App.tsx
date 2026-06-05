@@ -4,7 +4,7 @@ import { useState } from "react";
 import { submitMockConversion } from "./api/conversions";
 import { AdaptationModeSelector } from "./components/AdaptationModeSelector";
 import { ChapterInputPanel } from "./components/ChapterInputPanel";
-import { ConversionResultSummary } from "./components/ConversionResultSummary";
+import { ConversionResultWorkbench } from "./components/ConversionResultWorkbench";
 import { ConversionStatusPanel } from "./components/ConversionStatusPanel";
 import { WorkbenchHeader } from "./components/WorkbenchHeader";
 import {
@@ -171,7 +171,7 @@ export default function App() {
             </div>
 
             {submissionState === "success" && result ? (
-              <ConversionResultSummary result={result} />
+              <ConversionResultWorkbench result={result} />
             ) : (
               <ConversionStatusPanel
                 errorMessage={errorMessage}
