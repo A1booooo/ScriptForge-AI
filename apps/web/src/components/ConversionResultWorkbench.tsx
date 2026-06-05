@@ -1,6 +1,8 @@
 import type { MockConversionResponse } from "../types";
+import { CharacterBiblePanel } from "./CharacterBiblePanel";
 import { ConversionResultSummary } from "./ConversionResultSummary";
 import { PreviewChecksPanel } from "./PreviewChecksPanel";
+import { SceneBoardPanel } from "./SceneBoardPanel";
 import { YamlPreviewPanel } from "./YamlPreviewPanel";
 
 interface ConversionResultWorkbenchProps {
@@ -15,6 +17,8 @@ export function ConversionResultWorkbench({
       <ConversionResultSummary result={result} />
       <YamlPreviewPanel screenplay={result.screenplay} />
       <PreviewChecksPanel screenplay={result.screenplay} />
+      <SceneBoardPanel screenplay={result.screenplay} />
+      <CharacterBiblePanel screenplay={result.screenplay} />
     </section>
   );
 }

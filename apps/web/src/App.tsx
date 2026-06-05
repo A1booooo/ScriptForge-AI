@@ -146,7 +146,7 @@ export default function App() {
 
             <div className="flex flex-col gap-3 border-t border-zinc-800 pt-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm leading-6 text-zinc-500">
-                当前任务只生成 mock 剧本摘要，不展示 YAML、不做 Scene Board 或角色面板。
+                当前结果区会展示 mock 剧本摘要、只读 YAML、轻量 Preview Checks、Scene Board 和 Character Bible。
               </p>
               <button
                 className="inline-flex min-w-56 items-center justify-center gap-3 rounded-none border border-zinc-100 bg-zinc-100 px-5 py-3 text-sm font-medium text-zinc-950 transition duration-200 ease-out hover:bg-transparent hover:text-zinc-100 active:translate-y-px disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900 disabled:text-zinc-500"
