@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
+    sans-serif;
+  --font-serif: "Iowan Old Style", "Source Han Serif SC", "Noto Serif SC", serif;
+}
+
+:root {
+  color-scheme: dark;
+  font-family: var(--font-sans);
+  background-color: #09090b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.06), transparent 35%),
+    linear-gradient(180deg, #101113 0%, #0a0b0c 100%);
+  color: #f4f4f5;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel-enter {
+  animation: panel-enter 220ms ease-out;
+}
