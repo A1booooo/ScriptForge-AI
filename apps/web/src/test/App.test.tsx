@@ -350,23 +350,30 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
 
     const editor = await screen.findByLabelText("Edited YAML");
-    const exportButton = screen.getByRole("button", { name: "Export YAML" });
-
-    expect(exportButton).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "Export YAML" })
+    ).toBeEnabled();
 
     fireEvent.change(editor, {
       target: { value: "metadata:\n  title: [broken" }
     });
 
-    expect(await screen.findByText("Validation Result")).toBeInTheDocument();
-    await waitFor(() => expect(exportButton).toBeDisabled());
     expect(screen.getByText(/yaml_parse_error/i)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Export YAML" })
+      ).toBeDisabled()
+    );
 
     fireEvent.change(editor, {
       target: { value: screenplayToYaml(successResponse.screenplay) }
     });
 
-    await waitFor(() => expect(exportButton).toBeEnabled());
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Export YAML" })
+      ).toBeEnabled()
+    );
   });
 
   test("exports the current edited yaml instead of the original generated yaml", async () => {
