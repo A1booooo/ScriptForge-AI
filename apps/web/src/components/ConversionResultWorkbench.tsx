@@ -2,9 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { validateScreenplayYaml } from "@scriptforge/shared";
 
 import type { MockConversionResponse } from "../types";
-import type { SubmittedSourceSnapshot } from "../lib/chapterAnalysis";
+import {
+  analyzeChapterAdaptation,
+  type SubmittedSourceSnapshot
+} from "../lib/chapterAnalysis";
+import { getAdaptationQualityScore } from "../lib/adaptationQualityScore";
 import { screenplayToYaml } from "../lib/screenplayToYaml";
 import { downloadYamlFile, getYamlExportFilename } from "../lib/yamlExport";
+import { AdaptationQualityScorePanel } from "./AdaptationQualityScorePanel";
 import { ChapterAnalyzerPanel } from "./ChapterAnalyzerPanel";
 import { CharacterBiblePanel } from "./CharacterBiblePanel";
 import { ConversionResultSummary } from "./ConversionResultSummary";
@@ -36,14 +41,28 @@ export function ConversionResultWorkbench({
     () => validateScreenplayYaml(editedYaml),
     [editedYaml]
   );
+  const chapterAnalysis = useMemo(
+    () =>
+      analyzeChapterAdaptation({
+        screenplay: result.screenplay,
+        sourceSnapshot
+      }),
+    [result.screenplay, sourceSnapshot]
+  );
+  const adaptationQualityScore = useMemo(
+    () =>
+      getAdaptationQualityScore({
+        screenplay: result.screenplay,
+        chapterAnalysis,
+        validationResult
+      }),
+    [chapterAnalysis, result.screenplay, validationResult]
+  );
 
   return (
     <section className="space-y-4">
       <ConversionResultSummary result={result} />
-      <ChapterAnalyzerPanel
-        screenplay={result.screenplay}
-        sourceSnapshot={sourceSnapshot}
-      />
+      <ChapterAnalyzerPanel analysis={chapterAnalysis} />
       <YamlPreviewPanel
         canExport={validationResult.ok}
         editedYaml={editedYaml}
@@ -57,6 +76,7 @@ export function ConversionResultWorkbench({
         }
       />
       <ValidationResultPanel validationResult={validationResult} />
+      <AdaptationQualityScorePanel score={adaptationQualityScore} />
       <PreviewChecksPanel screenplay={result.screenplay} />
       <SceneBoardPanel screenplay={result.screenplay} />
       <CharacterBiblePanel screenplay={result.screenplay} />

@@ -186,6 +186,16 @@ describe("App", () => {
     expect(screen.getByText("Generated YAML")).toBeInTheDocument();
     expect(screen.getByLabelText("Edited YAML")).toBeInTheDocument();
     expect(screen.getByText("Validation Result")).toBeInTheDocument();
+    expect(screen.getByText("Adaptation Quality Score")).toBeInTheDocument();
+    expect(screen.getByText("Deterministic Demo score")).toBeInTheDocument();
+    expect(
+      screen.getByText(/not a real LLM quality judgment/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText("Structure")).toBeInTheDocument();
+    expect(screen.getByText("Character Coverage")).toBeInTheDocument();
+    expect(screen.getByText("Conflict Clarity")).toBeInTheDocument();
+    expect(screen.getByText("Schema Completeness")).toBeInTheDocument();
+    expect(screen.getAllByText("Signal source").length).toBeGreaterThan(0);
     expect(screen.getByText("conv_mock_001")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText("River Street Mystery Draft")).toBeInTheDocument();
@@ -201,6 +211,34 @@ describe("App", () => {
       screen.getByText(
         "Preview Checks remains a lightweight panel. The shared validator runtime is not wired into this UI yet."
       )
+    ).toBeInTheDocument();
+  });
+
+  test("updates schema completeness when the current validation state becomes invalid", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify(successResponse), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      })
+    );
+
+    render(<App />);
+    fillMinimumValidForm();
+
+    fireEvent.click(screen.getByRole("button", { name: /mock/i }));
+
+    const editor = await screen.findByLabelText("Edited YAML");
+
+    expect(screen.getByText("Schema Completeness")).toBeInTheDocument();
+    expect(screen.getByText("Validation currently passes without parse, schema, or consistency issues.")).toBeInTheDocument();
+
+    fireEvent.change(editor, {
+      target: { value: "metadata:\n  title: [broken" }
+    });
+
+    expect(await screen.findByText(/yaml_parse_error/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/current validation state reports 1 issue/i)
     ).toBeInTheDocument();
   });
 
