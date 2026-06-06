@@ -21,11 +21,13 @@ import { ValidationResultPanel } from "./ValidationResultPanel";
 import { YamlPreviewPanel } from "./YamlPreviewPanel";
 
 interface ConversionResultWorkbenchProps {
+  isDemoSample: boolean;
   result: MockConversionResponse;
   sourceSnapshot: SubmittedSourceSnapshot;
 }
 
 export function ConversionResultWorkbench({
+  isDemoSample,
   result,
   sourceSnapshot
 }: ConversionResultWorkbenchProps) {
@@ -72,7 +74,7 @@ export function ConversionResultWorkbench({
 
   return (
     <section className="space-y-4">
-      <ConversionResultSummary result={result} />
+      <ConversionResultSummary isDemoSample={isDemoSample} result={result} />
       <ChapterAnalyzerPanel analysis={chapterAnalysis} />
       <YamlPreviewPanel
         canExport={validationResult.ok}

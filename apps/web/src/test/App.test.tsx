@@ -4,6 +4,7 @@ import { sampleScreenplay } from "@scriptforge/shared";
 import { stringify } from "yaml";
 
 import App from "../App";
+import { DEMO_SAMPLE_BADGE_LABEL } from "../lib/demoFixtures";
 import { screenplayToYaml } from "../lib/screenplayToYaml";
 
 const successResponse = {
@@ -438,5 +439,44 @@ describe("App", () => {
 
     expect(blobText).toContain("Edited Export Title");
     expect(clickSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test("runs the demo sample through the existing mock conversion flow and shows demo disclosure in entry and result areas", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify(successResponse), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      })
+    );
+
+    render(<App />);
+
+    expect(
+      screen.getByText(
+        /loads the demo sample and immediately submits it through the existing mock conversion flow/i
+      )
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Run Demo Sample" }));
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/conversions/mock",
+      expect.objectContaining({
+        method: "POST"
+      })
+    );
+
+    expect(await screen.findAllByText(DEMO_SAMPLE_BADGE_LABEL)).toHaveLength(2);
+    expect(
+      screen.getAllByText(/not real user data and not real llm output/i)
+    ).toHaveLength(2);
+    expect(screen.getByText("Chapter Analyzer")).toBeInTheDocument();
+    expect(screen.getByText("Adaptation Quality Score")).toBeInTheDocument();
+    expect(screen.getByText("Rewrite Suggestions")).toBeInTheDocument();
+    expect(screen.getByText("YAML Workspace")).toBeInTheDocument();
+    expect(screen.getByText("Validation Result")).toBeInTheDocument();
+    expect(screen.getByText("Scene Board")).toBeInTheDocument();
+    expect(screen.getByText("Character Bible")).toBeInTheDocument();
   });
 });
