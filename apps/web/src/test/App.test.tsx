@@ -181,6 +181,8 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
 
     expect(await screen.findByText("YAML Workspace")).toBeInTheDocument();
+    expect(screen.getByText("Chapter Analyzer")).toBeInTheDocument();
+    expect(screen.getByText("Demo analysis")).toBeInTheDocument();
     expect(screen.getByText("Generated YAML")).toBeInTheDocument();
     expect(screen.getByLabelText("Edited YAML")).toBeInTheDocument();
     expect(screen.getByText("Validation Result")).toBeInTheDocument();
@@ -200,6 +202,31 @@ describe("App", () => {
         "Preview Checks remains a lightweight panel. The shared validator runtime is not wired into this UI yet."
       )
     ).toBeInTheDocument();
+  });
+
+  test("keeps chapter analyzer bound to the submitted source snapshot instead of live form edits", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify(successResponse), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      })
+    );
+
+    render(<App />);
+    fillMinimumValidForm();
+
+    fireEvent.click(screen.getByRole("button", { name: /mock/i }));
+
+    expect(await screen.findByText("Chapter Analyzer")).toBeInTheDocument();
+    expect(screen.getByText("River Street Mystery")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("项目标题"), {
+      target: { value: "Changed After Submit" }
+    });
+
+    expect(screen.getByDisplayValue("Changed After Submit")).toBeInTheDocument();
+    expect(screen.getByText("River Street Mystery")).toBeInTheDocument();
+    expect(screen.queryByText("Changed After Submit")).not.toBeInTheDocument();
   });
 
   test("resets edited yaml when a new conversion result arrives", async () => {

@@ -11,6 +11,7 @@ import {
   createInitialFormValues,
   getCompletedChapterCount
 } from "./lib/formDefaults";
+import type { SubmittedSourceSnapshot } from "./lib/chapterAnalysis";
 import type {
   ChapterFormValue,
   MockConversionResponse,
@@ -22,6 +23,8 @@ export default function App() {
   const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [result, setResult] = useState<MockConversionResponse | null>(null);
+  const [submittedSourceSnapshot, setSubmittedSourceSnapshot] =
+    useState<SubmittedSourceSnapshot | null>(null);
 
   function updateChapter(
     chapterIndex: number,
@@ -65,22 +68,31 @@ export default function App() {
     setSubmissionState("loading");
     setErrorMessage(null);
     setResult(null);
+    setSubmittedSourceSnapshot(null);
+
+    const submittedPayload = {
+      title: formValues.title.trim(),
+      adaptation_mode: formValues.adaptation_mode,
+      chapters: formValues.chapters.map((chapter) => ({
+        id: chapter.id.trim(),
+        title: chapter.title.trim(),
+        content: chapter.content.trim()
+      }))
+    };
 
     try {
-      const response = await submitMockConversion({
-        ...formValues,
-        title: formValues.title.trim(),
-        chapters: formValues.chapters.map((chapter) => ({
-          id: chapter.id.trim(),
-          title: chapter.title.trim(),
-          content: chapter.content.trim()
-        }))
-      });
+      const response = await submitMockConversion(submittedPayload);
 
       setResult(response);
+      setSubmittedSourceSnapshot({
+        title: submittedPayload.title,
+        adaptationMode: submittedPayload.adaptation_mode,
+        chapters: submittedPayload.chapters
+      });
       setSubmissionState("success");
     } catch (error) {
       setSubmissionState("error");
+      setSubmittedSourceSnapshot(null);
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -170,8 +182,11 @@ export default function App() {
               </p>
             </div>
 
-            {submissionState === "success" && result ? (
-              <ConversionResultWorkbench result={result} />
+            {submissionState === "success" && result && submittedSourceSnapshot ? (
+              <ConversionResultWorkbench
+                result={result}
+                sourceSnapshot={submittedSourceSnapshot}
+              />
             ) : (
               <ConversionStatusPanel
                 errorMessage={errorMessage}
