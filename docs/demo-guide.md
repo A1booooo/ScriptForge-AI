@@ -25,10 +25,20 @@ The demo should emphasize:
 - Making AI output safer through schema validation.
 - Helping authors revise through Scene Board, Character Bible, and adaptation reports.
 
-## Fallback Plan Placeholder
+## Fallback Plan
 
-If live generation is unavailable during the final demo, the project should provide clearly marked Demo fixtures and a one-click sample path.
+If live generation is unavailable during the final demo, use the built-in `Run Demo Sample` path.
+
+- It loads a clearly marked Demo sample in the frontend.
+- It immediately submits that sample through the existing `POST /api/conversions/mock` flow.
+- The UI keeps Demo disclosure visible so the audience does not confuse it with real user data or real LLM output.
 
 ## Current Status
 
-This file only records the intended demo route. Fixtures, sample data, UI, backend behavior, and export implementation will be added in later tasks.
+The repo now includes a minimal T13 demo fallback:
+
+- a frontend-local Demo fixture set
+- a one-click `Run Demo Sample` entry in the workbench
+- explicit Demo labels in the entry area and result summary
+
+This still does not add a real LLM endpoint, a dedicated demo backend route, or any new intelligent analysis beyond the existing deterministic Demo panels.

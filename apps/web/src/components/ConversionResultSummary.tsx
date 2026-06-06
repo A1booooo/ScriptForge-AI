@@ -1,6 +1,11 @@
+import {
+  DEMO_SAMPLE_BADGE_LABEL,
+  DEMO_SAMPLE_NOTE
+} from "../lib/demoFixtures";
 import type { MockConversionResponse } from "../types";
 
 interface ConversionResultSummaryProps {
+  isDemoSample: boolean;
   result: MockConversionResponse;
 }
 
@@ -22,6 +27,7 @@ function SummaryItem({
 }
 
 export function ConversionResultSummary({
+  isDemoSample,
   result
 }: ConversionResultSummaryProps) {
   return (
@@ -50,6 +56,17 @@ export function ConversionResultSummary({
           value={result.screenplay.metadata.title}
         />
       </dl>
+
+      {isDemoSample ? (
+        <div className="border border-amber-500/30 bg-amber-500/10 px-4 py-4">
+          <p className="text-xs tracking-[0.18em] text-amber-200 uppercase">
+            {DEMO_SAMPLE_BADGE_LABEL}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-amber-100/85">
+            {DEMO_SAMPLE_NOTE}
+          </p>
+        </div>
+      ) : null}
 
       {result.warnings.length > 0 ? (
         <div className="border border-amber-500/30 bg-amber-500/10 px-4 py-4">
