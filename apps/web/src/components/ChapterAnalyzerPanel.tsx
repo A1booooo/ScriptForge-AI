@@ -1,14 +1,7 @@
-import { useMemo } from "react";
-
-import {
-  analyzeChapterAdaptation,
-  type SubmittedSourceSnapshot
-} from "../lib/chapterAnalysis";
-import type { ScreenplayDocument } from "@scriptforge/shared";
+import type { ChapterAnalysisResult } from "../lib/chapterAnalysis";
 
 interface ChapterAnalyzerPanelProps {
-  sourceSnapshot: SubmittedSourceSnapshot;
-  screenplay: ScreenplayDocument;
+  analysis: ChapterAnalysisResult;
 }
 
 function SectionList({
@@ -32,19 +25,7 @@ function SectionList({
   );
 }
 
-export function ChapterAnalyzerPanel({
-  sourceSnapshot,
-  screenplay
-}: ChapterAnalyzerPanelProps) {
-  const analysis = useMemo(
-    () =>
-      analyzeChapterAdaptation({
-        sourceSnapshot,
-        screenplay
-      }),
-    [screenplay, sourceSnapshot]
-  );
-
+export function ChapterAnalyzerPanel({ analysis }: ChapterAnalyzerPanelProps) {
   return (
     <section className="panel-enter overflow-hidden border border-zinc-800 bg-zinc-950/85 shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
       <div className="border-b border-zinc-800 px-5 py-4">
