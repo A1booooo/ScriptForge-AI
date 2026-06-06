@@ -191,6 +191,20 @@ describe("App", () => {
     expect(
       screen.getByText(/not a real LLM quality judgment/i)
     ).toBeInTheDocument();
+    expect(screen.getByText("Rewrite Suggestions")).toBeInTheDocument();
+    expect(
+      screen.getByText("Deterministic Demo suggestions")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/not a real LLM rewrite/i)
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Mode").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Target").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Reason").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Signal source").length).toBeGreaterThan(0);
+    expect(screen.getByText("dialogue-enhancement")).toBeInTheDocument();
+    expect(screen.getByText("pacing-adjustment")).toBeInTheDocument();
+    expect(screen.getByText("scene-compression")).toBeInTheDocument();
     expect(screen.getByText("Structure")).toBeInTheDocument();
     expect(screen.getByText("Character Coverage")).toBeInTheDocument();
     expect(screen.getByText("Conflict Clarity")).toBeInTheDocument();
@@ -336,23 +350,30 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
 
     const editor = await screen.findByLabelText("Edited YAML");
-    const exportButton = screen.getByRole("button", { name: "Export YAML" });
-
-    expect(exportButton).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "Export YAML" })
+    ).toBeEnabled();
 
     fireEvent.change(editor, {
       target: { value: "metadata:\n  title: [broken" }
     });
 
-    expect(await screen.findByText("Validation Result")).toBeInTheDocument();
-    await waitFor(() => expect(exportButton).toBeDisabled());
     expect(screen.getByText(/yaml_parse_error/i)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Export YAML" })
+      ).toBeDisabled()
+    );
 
     fireEvent.change(editor, {
       target: { value: screenplayToYaml(successResponse.screenplay) }
     });
 
-    await waitFor(() => expect(exportButton).toBeEnabled());
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Export YAML" })
+      ).toBeEnabled()
+    );
   });
 
   test("exports the current edited yaml instead of the original generated yaml", async () => {
