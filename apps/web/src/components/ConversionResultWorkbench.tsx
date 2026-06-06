@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { validateScreenplayYaml } from "@scriptforge/shared";
 
 import type { MockConversionResponse } from "../types";
+import type { SubmittedSourceSnapshot } from "../lib/chapterAnalysis";
 import { screenplayToYaml } from "../lib/screenplayToYaml";
 import { downloadYamlFile, getYamlExportFilename } from "../lib/yamlExport";
+import { ChapterAnalyzerPanel } from "./ChapterAnalyzerPanel";
 import { CharacterBiblePanel } from "./CharacterBiblePanel";
 import { ConversionResultSummary } from "./ConversionResultSummary";
 import { PreviewChecksPanel } from "./PreviewChecksPanel";
@@ -13,10 +15,12 @@ import { YamlPreviewPanel } from "./YamlPreviewPanel";
 
 interface ConversionResultWorkbenchProps {
   result: MockConversionResponse;
+  sourceSnapshot: SubmittedSourceSnapshot;
 }
 
 export function ConversionResultWorkbench({
-  result
+  result,
+  sourceSnapshot
 }: ConversionResultWorkbenchProps) {
   const generatedYaml = useMemo(
     () => screenplayToYaml(result.screenplay),
@@ -36,6 +40,10 @@ export function ConversionResultWorkbench({
   return (
     <section className="space-y-4">
       <ConversionResultSummary result={result} />
+      <ChapterAnalyzerPanel
+        screenplay={result.screenplay}
+        sourceSnapshot={sourceSnapshot}
+      />
       <YamlPreviewPanel
         canExport={validationResult.ok}
         editedYaml={editedYaml}
