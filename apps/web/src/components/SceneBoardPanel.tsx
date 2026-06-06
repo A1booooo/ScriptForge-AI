@@ -30,7 +30,7 @@ export function SceneBoardPanel({ screenplay }: SceneBoardPanelProps) {
       </div>
 
       <div className="border-b border-zinc-900 bg-black/20 px-5 py-3 text-sm leading-6 text-zinc-400">
-        The Scene Board reads directly from the current mock API `ScreenplayDocument` result and resolves linked locations, characters, and chapter references for display.
+        Generated draft view only. The Scene Board reads from the current mock API `ScreenplayDocument` result, while edited YAML is validated and exported separately in the YAML workspace.
       </div>
 
       <div className="space-y-4 px-5 py-5">

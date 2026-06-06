@@ -33,7 +33,7 @@ export function CharacterBiblePanel({ screenplay }: CharacterBiblePanelProps) {
       </div>
 
       <div className="border-b border-zinc-900 bg-black/20 px-5 py-3 text-sm leading-6 text-zinc-400">
-        The Character Bible stays within current schema fields: id, role, description, motivation, speech style, relationships, and appearance scenes derived from `scenes`.
+        Generated draft view only. The Character Bible stays within current schema fields from the generated result, while edited YAML powers the validation and export loop.
       </div>
 
       <div className="space-y-4 px-5 py-5">
