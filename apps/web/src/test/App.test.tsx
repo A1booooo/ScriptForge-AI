@@ -191,6 +191,20 @@ describe("App", () => {
     expect(
       screen.getByText(/not a real LLM quality judgment/i)
     ).toBeInTheDocument();
+    expect(screen.getByText("Rewrite Suggestions")).toBeInTheDocument();
+    expect(
+      screen.getByText("Deterministic Demo suggestions")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/not a real LLM rewrite/i)
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Mode").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Target").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Reason").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Signal source").length).toBeGreaterThan(0);
+    expect(screen.getByText("dialogue-enhancement")).toBeInTheDocument();
+    expect(screen.getByText("pacing-adjustment")).toBeInTheDocument();
+    expect(screen.getByText("scene-compression")).toBeInTheDocument();
     expect(screen.getByText("Structure")).toBeInTheDocument();
     expect(screen.getByText("Character Coverage")).toBeInTheDocument();
     expect(screen.getByText("Conflict Clarity")).toBeInTheDocument();
