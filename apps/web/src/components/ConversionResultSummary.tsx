@@ -34,7 +34,7 @@ export function ConversionResultSummary({
           Mock screenplay draft generated
         </h2>
         <p className="text-sm leading-6 text-zinc-400">
-          The result panel now exposes a read-only YAML preview plus lightweight screenplay preview checks.
+          The result panel now separates generated YAML, editable YAML, validation status, and generated-draft reference views.
         </p>
       </div>
 

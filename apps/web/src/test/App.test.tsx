@@ -1,8 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { sampleScreenplay } from "@scriptforge/shared";
+import { stringify } from "yaml";
 
 import App from "../App";
+import { screenplayToYaml } from "../lib/screenplayToYaml";
 
 const successResponse = {
   conversion_id: "conv_mock_001",
@@ -59,6 +61,13 @@ function fillMinimumValidForm() {
 describe("App", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
+    vi.stubGlobal(
+      "URL",
+      Object.assign(URL, {
+        createObjectURL: vi.fn(() => "blob:mock-yaml"),
+        revokeObjectURL: vi.fn()
+      })
+    );
   });
 
   afterEach(() => {
@@ -171,7 +180,10 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
 
-    expect(await screen.findByText("YAML Preview")).toBeInTheDocument();
+    expect(await screen.findByText("YAML Workspace")).toBeInTheDocument();
+    expect(screen.getByText("Generated YAML")).toBeInTheDocument();
+    expect(screen.getByLabelText("Edited YAML")).toBeInTheDocument();
+    expect(screen.getByText("Validation Result")).toBeInTheDocument();
     expect(screen.getByText("conv_mock_001")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText("River Street Mystery Draft")).toBeInTheDocument();
@@ -188,5 +200,157 @@ describe("App", () => {
         "Preview Checks remains a lightweight panel. The shared validator runtime is not wired into this UI yet."
       )
     ).toBeInTheDocument();
+  });
+
+  test("resets edited yaml when a new conversion result arrives", async () => {
+    const secondResponse = {
+      ...successResponse,
+      conversion_id: "conv_mock_002",
+      screenplay: {
+        ...successResponse.screenplay,
+        metadata: {
+          ...successResponse.screenplay.metadata,
+          title: "Second Draft Title"
+        }
+      }
+    } as const;
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(successResponse), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(secondResponse), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        })
+      );
+
+    render(<App />);
+    fillMinimumValidForm();
+
+    const submitButton = screen.getByRole("button", {
+      name: "生成 mock 剧本摘要"
+    });
+
+    fireEvent.click(submitButton);
+
+    const editor = await screen.findByLabelText("Edited YAML");
+    fireEvent.change(editor, {
+      target: {
+        value: "schema_version: '1.0.0'\nmetadata:\n  title: Changed Locally"
+      }
+    });
+
+    expect(screen.getByDisplayValue(/Changed Locally/)).toBeInTheDocument();
+
+    fireEvent.click(submitButton);
+
+    await screen.findByText("conv_mock_002");
+
+    expect(screen.getByLabelText("Edited YAML")).toHaveValue(
+      screenplayToYaml(secondResponse.screenplay)
+    );
+    expect(screen.queryByDisplayValue(/Changed Locally/)).not.toBeInTheDocument();
+  });
+
+  test("disables export when edited yaml is invalid and re-enables it after fixing the yaml", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify(successResponse), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      })
+    );
+
+    render(<App />);
+    fillMinimumValidForm();
+
+    fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
+
+    const editor = await screen.findByLabelText("Edited YAML");
+    const exportButton = screen.getByRole("button", { name: "Export YAML" });
+
+    expect(exportButton).toBeEnabled();
+
+    fireEvent.change(editor, {
+      target: { value: "metadata:\n  title: [broken" }
+    });
+
+    expect(await screen.findByText("Validation Result")).toBeInTheDocument();
+    await waitFor(() => expect(exportButton).toBeDisabled());
+    expect(screen.getByText(/yaml_parse_error/i)).toBeInTheDocument();
+
+    fireEvent.change(editor, {
+      target: { value: screenplayToYaml(successResponse.screenplay) }
+    });
+
+    await waitFor(() => expect(exportButton).toBeEnabled());
+  });
+
+  test("exports the current edited yaml instead of the original generated yaml", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify(successResponse), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      })
+    );
+
+    const clickSpy = vi.fn();
+    const originalCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi.spyOn(document, "createElement");
+
+    createElementSpy.mockImplementation((tagName: string) => {
+      const element = originalCreateElement(tagName);
+
+      if (tagName.toLowerCase() === "a") {
+        Object.defineProperty(element, "click", {
+          value: clickSpy
+        });
+      }
+
+      return element as HTMLElement;
+    });
+
+    render(<App />);
+    fillMinimumValidForm();
+
+    fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
+
+    const editor = await screen.findByLabelText("Edited YAML");
+    const editedYaml = stringify({
+      ...successResponse.screenplay,
+      metadata: {
+        ...successResponse.screenplay.metadata,
+        title: "Edited Export Title"
+      }
+    });
+
+    fireEvent.change(editor, {
+      target: { value: editedYaml }
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Export YAML" }));
+
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+    const blob = vi.mocked(URL.createObjectURL).mock.calls[0]?.[0];
+
+    expect(blob).toBeInstanceOf(Blob);
+    const blobText = await new Promise<string | null>((resolve, reject) => {
+      if (!(blob instanceof Blob)) {
+        resolve(null);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(blob);
+    });
+
+    expect(blobText).toContain("Edited Export Title");
+    expect(clickSpy).toHaveBeenCalledTimes(1);
   });
 });
