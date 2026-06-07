@@ -1,8 +1,8 @@
-import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { submitMockConversion } from "../api/conversions";
+import { submitRealConversion } from "../api/conversions";
 
-describe("submitMockConversion", () => {
+describe("submitRealConversion", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
   });
@@ -17,23 +17,23 @@ describe("submitMockConversion", () => {
       new Response(
         JSON.stringify({
           error: {
-            code: "INVALID_REQUEST",
-            message: "title must be a non-empty string."
+            code: "missing_api_key",
+            message: "未配置 LLM API Key"
           }
         }),
         {
-          status: 400,
+          status: 500,
           headers: { "Content-Type": "application/json" }
         }
       )
     );
 
     await expect(
-      submitMockConversion({
+      submitRealConversion({
         title: "",
         adaptation_mode: "faithful",
         chapters: []
       })
-    ).rejects.toThrow("title must be a non-empty string.");
+    ).rejects.toThrow("未配置 LLM API Key");
   });
 });

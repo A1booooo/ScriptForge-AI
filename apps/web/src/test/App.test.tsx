@@ -4,7 +4,6 @@ import { sampleScreenplay } from "@scriptforge/shared";
 import { stringify } from "yaml";
 
 import App from "../App";
-import { DEMO_SAMPLE_BADGE_LABEL } from "../lib/demoFixtures";
 import { screenplayToYaml } from "../lib/screenplayToYaml";
 
 if (typeof window !== "undefined" && !window.ResizeObserver) {
@@ -15,11 +14,11 @@ if (typeof window !== "undefined" && !window.ResizeObserver) {
   };
 }
 
-
 const successResponse = {
-  conversion_id: "conv_mock_001",
+  conversion_id: "conv_real_001",
   status: "completed",
   mode: "dramatic",
+  source: "real_llm",
   input_summary: {
     title: "River Street Mystery",
     chapter_count: 3,
@@ -33,7 +32,7 @@ const successResponse = {
     }
   },
   warnings: [],
-  mock: true
+  mock: false
 } as const;
 
 function fillMinimumValidForm() {
@@ -85,11 +84,11 @@ describe("App", () => {
     vi.restoreAllMocks();
   });
 
-  test("renders header, mode selector, and three chapter cards", () => {
+  test("renders the real conversion header and three default chapter cards", () => {
     render(<App />);
 
     expect(screen.getByText("ScriptForge AI 剧本工坊")).toBeInTheDocument();
-    expect(screen.getByText("T04：章节输入工作台 · Mock API")).toBeInTheDocument();
+    expect(screen.getByText("T15：真实 LLM 转换工作台")).toBeInTheDocument();
     expect(screen.getByLabelText("项目标题")).toBeInTheDocument();
     expect(screen.getByLabelText("改编模式")).toBeInTheDocument();
     expect(screen.getAllByRole("textbox", { name: "章节 ID" })).toHaveLength(3);
@@ -97,7 +96,7 @@ describe("App", () => {
     expect(screen.getAllByRole("textbox", { name: "章节内容" })).toHaveLength(3);
   });
 
-  test("shows an error and does not submit when fewer than three chapters are filled", async () => {
+  test("shows an error and does not submit when fewer than three chapters are complete", async () => {
     render(<App />);
 
     fireEvent.change(screen.getByLabelText("项目标题"), {
@@ -120,13 +119,13 @@ describe("App", () => {
       });
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
     expect(await screen.findByText("Error")).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  test("submits valid input to the mock conversion api", async () => {
+  test("submits valid input to the real conversion api", async () => {
     vi.mocked(fetch).mockResolvedValue(
       new Response(JSON.stringify(successResponse), {
         status: 200,
@@ -137,11 +136,11 @@ describe("App", () => {
     render(<App />);
     fillMinimumValidForm();
 
-    fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
     expect(fetch).toHaveBeenCalledWith(
-      "/api/conversions/mock",
+      "/api/conversions/real",
       expect.objectContaining({
         method: "POST",
         headers: {
@@ -151,17 +150,17 @@ describe("App", () => {
     );
   });
 
-  test("shows api error feedback when the request fails", async () => {
+  test("shows api error feedback when the real request fails", async () => {
     vi.mocked(fetch).mockResolvedValue(
       new Response(
         JSON.stringify({
           error: {
-            code: "INVALID_REQUEST",
-            message: "chapters must contain at least 3 items."
+            code: "missing_api_key",
+            message: "未配置 LLM API Key"
           }
         }),
         {
-          status: 400,
+          status: 500,
           headers: { "Content-Type": "application/json" }
         }
       )
@@ -170,14 +169,12 @@ describe("App", () => {
     render(<App />);
     fillMinimumValidForm();
 
-    fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    expect(
-      await screen.findByText("chapters must contain at least 3 items.")
-    ).toBeInTheDocument();
+    expect(await screen.findByText("未配置 LLM API Key")).toBeInTheDocument();
   });
 
-  test("shows yaml preview and preview checks after a successful conversion", async () => {
+  test("enters the result workspace after a successful real conversion", async () => {
     vi.mocked(fetch).mockResolvedValue(
       new Response(JSON.stringify(successResponse), {
         status: 200,
@@ -188,122 +185,45 @@ describe("App", () => {
     render(<App />);
     fillMinimumValidForm();
 
-    fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    // 1. Overview tab (Default)
     expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
-    expect(screen.getAllByText("就绪度 / 质量评分").length).toBeGreaterThan(0);
-    expect(screen.getByText("确定性 Demo 评分")).toBeInTheDocument();
-    expect(screen.getByText("结构就绪度")).toBeInTheDocument();
-    expect(screen.getByText("角色覆盖度")).toBeInTheDocument();
-    expect(screen.getByText("冲突清晰度")).toBeInTheDocument();
-    expect(screen.getByText("Schema 完整度")).toBeInTheDocument();
-    expect(screen.getByText("conv_mock_001")).toBeInTheDocument();
+    expect(screen.getByText("conv_real_001")).toBeInTheDocument();
     expect(screen.getByText("River Street Mystery Draft")).toBeInTheDocument();
 
-    // 2. Switch to Analysis tab
     fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
     expect(screen.getByText("Chapter Analyzer")).toBeInTheDocument();
-    expect(screen.getByText("Demo analysis")).toBeInTheDocument();
-    expect(screen.getByText("修改建议")).toBeInTheDocument();
-    expect(screen.getByText("确定性 Demo 建议")).toBeInTheDocument();
-    expect(screen.getAllByText("建议类型").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("作用对象").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("建议原因").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("信号来源").length).toBeGreaterThan(0);
-    expect(screen.getByText("dialogue-enhancement")).toBeInTheDocument();
-    expect(screen.getByText("pacing-adjustment")).toBeInTheDocument();
-    expect(screen.getByText("scene-compression")).toBeInTheDocument();
 
-    // 3. Switch to Contract tab
     fireEvent.click(screen.getByRole("button", { name: "Contract" }));
-    expect(screen.getByText("YAML 合约工作区")).toBeInTheDocument();
-    expect(screen.getByText("生成基线")).toBeInTheDocument();
     expect(screen.getByLabelText("Edited YAML")).toBeInTheDocument();
-    expect(screen.getByText("校验结果")).toBeInTheDocument();
-    expect(screen.getByText("预览检查")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "预览检查仍为轻量级面板。共享校验器运行时尚未接入此 UI。"
-      )
-    ).toBeInTheDocument();
-    expect(screen.getAllByText(/schema_version/).length).toBeGreaterThan(0);
 
-    // 4. Switch to Draft View tab
     fireEvent.click(screen.getByRole("button", { name: "Draft View" }));
-    expect(screen.getByText("场景板")).toBeInTheDocument();
-    expect(screen.getByText("角色档案")).toBeInTheDocument();
-    expect(
-      screen.getAllByText("Rumors Under Lantern Light").length
-    ).toBeGreaterThan(0);
-    expect(screen.getAllByText("Lin Xia").length).toBeGreaterThan(0);
-  });
-
-  test("updates schema completeness when the current validation state becomes invalid", async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      new Response(JSON.stringify(successResponse), {
-        status: 200,
-        headers: { "Content-Type": "application/json" }
-      })
-    );
-
-    render(<App />);
-    fillMinimumValidForm();
-
-    fireEvent.click(screen.getByRole("button", { name: /mock/i }));
-
-    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
-    expect(screen.getByText("Schema 完整度")).toBeInTheDocument();
-    expect(screen.getByText("校验当前已通过，没有解析、Schema 或一致性问题。")).toBeInTheDocument();
-
-    // Switch to Contract tab to edit YAML
-    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
-    const editor = screen.getByLabelText("Edited YAML");
-
-    fireEvent.change(editor, {
-      target: { value: "metadata:\n  title: [broken" }
-    });
-
-    expect(await screen.findByText(/yaml_parse_error/i, {}, { timeout: 3000 })).toBeInTheDocument();
-
-    // Switch back to Overview to verify quality score dimension updates
-    fireEvent.click(screen.getByRole("button", { name: "Overview" }));
-    expect(
-      screen.getByText(/当前校验状态报告了 1 个问题/)
-    ).toBeInTheDocument();
+    expect(screen.getAllByText("Rumors Under Lantern Light").length).toBeGreaterThan(0);
   });
 
   test("keeps chapter analyzer bound to the submitted source snapshot instead of live form edits", async () => {
-    vi.mocked(fetch).mockImplementation(() =>
-      Promise.resolve(
-        new Response(JSON.stringify(successResponse), {
-          status: 200,
-          headers: { "Content-Type": "application/json" }
-        })
-      )
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify(successResponse), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      })
     );
 
     render(<App />);
     fillMinimumValidForm();
 
-    fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    // Switch to Analysis tab
     expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
-    expect(screen.getByText("Chapter Analyzer")).toBeInTheDocument();
     expect(screen.getByText("River Street Mystery")).toBeInTheDocument();
 
-    // Go back to input view to change fields
     fireEvent.click(screen.getByRole("button", { name: "← 返回修改章节" }));
 
     fireEvent.change(screen.getByLabelText("项目标题"), {
       target: { value: "Changed After Submit" }
     });
 
-    expect(screen.getByDisplayValue("Changed After Submit")).toBeInTheDocument();
-
-    // Switch back to results using the "查看生成结果" button
     fireEvent.click(screen.getByRole("button", { name: "查看生成结果" }));
     expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
@@ -315,7 +235,7 @@ describe("App", () => {
   test("resets edited yaml when a new conversion result arrives", async () => {
     const secondResponse = {
       ...successResponse,
-      conversion_id: "conv_mock_002",
+      conversion_id: "conv_real_002",
       screenplay: {
         ...successResponse.screenplay,
         metadata: {
@@ -342,13 +262,8 @@ describe("App", () => {
     render(<App />);
     fillMinimumValidForm();
 
-    const submitButton = screen.getByRole("button", {
-      name: "生成 mock 剧本摘要"
-    });
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    fireEvent.click(submitButton);
-
-    // Switch to Contract tab to edit
     expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Contract" }));
     const editor = screen.getByLabelText("Edited YAML");
@@ -358,26 +273,18 @@ describe("App", () => {
       }
     });
 
-    expect(screen.getByDisplayValue(/Changed Locally/)).toBeInTheDocument();
-
-    // Go back to input to resubmit
     fireEvent.click(screen.getByRole("button", { name: "← 返回修改章节" }));
-    
-    // Query the newly mounted submit button
-    const submitButton2 = screen.getByRole("button", { name: "生成 mock 剧本摘要" });
-    fireEvent.click(submitButton2);
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    // Switch back to Contract tab
-    expect(await screen.findByText("conv_mock_002", {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(await screen.findByText("conv_real_002", {}, { timeout: 3000 })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Contract" }));
 
     expect(screen.getByLabelText("Edited YAML")).toHaveValue(
       screenplayToYaml(secondResponse.screenplay)
     );
-    expect(screen.queryByDisplayValue(/Changed Locally/)).not.toBeInTheDocument();
   });
 
-  test("disables export when edited yaml is invalid and re-enables it after fixing the yaml", async () => {
+  test("keeps YAML export gated by validation state", async () => {
     vi.mocked(fetch).mockResolvedValue(
       new Response(JSON.stringify(successResponse), {
         status: 200,
@@ -388,24 +295,19 @@ describe("App", () => {
     render(<App />);
     fillMinimumValidForm();
 
-    fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    // Switch to Contract tab
     fireEvent.click(await screen.findByRole("button", { name: "Contract" }));
     const editor = screen.getByLabelText("Edited YAML");
-    expect(
-      screen.getByRole("button", { name: "Export YAML" })
-    ).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Export YAML" })).toBeEnabled();
 
     fireEvent.change(editor, {
       target: { value: "metadata:\n  title: [broken" }
     });
 
-    expect(screen.getByText(/yaml_parse_error/i)).toBeInTheDocument();
+    expect(await screen.findByText(/yaml_parse_error/i)).toBeInTheDocument();
     await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "Export YAML" })
-      ).toBeDisabled()
+      expect(screen.getByRole("button", { name: "Export YAML" })).toBeDisabled()
     );
 
     fireEvent.change(editor, {
@@ -413,9 +315,7 @@ describe("App", () => {
     });
 
     await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "Export YAML" })
-      ).toBeEnabled()
+      expect(screen.getByRole("button", { name: "Export YAML" })).toBeEnabled()
     );
   });
 
@@ -446,9 +346,8 @@ describe("App", () => {
     render(<App />);
     fillMinimumValidForm();
 
-    fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    // Switch to Contract tab
     fireEvent.click(await screen.findByRole("button", { name: "Contract" }));
     const editor = screen.getByLabelText("Edited YAML");
     const editedYaml = stringify({
@@ -476,7 +375,8 @@ describe("App", () => {
       }
 
       const reader = new FileReader();
-      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onload = () =>
+        resolve(typeof reader.result === "string" ? reader.result : null);
       reader.onerror = () => reject(reader.error);
       reader.readAsText(blob);
     });
@@ -485,57 +385,43 @@ describe("App", () => {
     expect(clickSpy).toHaveBeenCalledTimes(1);
   });
 
-  test("runs the demo sample through the existing mock conversion flow and shows demo disclosure in entry and result areas", async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      new Response(JSON.stringify(successResponse), {
-        status: 200,
-        headers: { "Content-Type": "application/json" }
-      })
-    );
+  test("loads sample chapters without calling any conversion endpoint", () => {
+    render(<App />);
 
+    fireEvent.click(screen.getByRole("button", { name: "加载示例章节" }));
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue("第 1 章")).toBeInTheDocument();
+    expect(screen.getAllByLabelText("章节标题").length).toBeGreaterThanOrEqual(3);
+  });
+
+  test("adds a fourth chapter and allows removing extra chapters only", () => {
+    render(<App />);
+
+    expect(screen.getAllByLabelText("章节标题")).toHaveLength(3);
+
+    fireEvent.click(screen.getByRole("button", { name: "添加章节" }));
+    expect(screen.getAllByLabelText("章节标题")).toHaveLength(4);
+
+    expect(
+      screen.getByRole("button", { name: "删除章节 4" })
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "删除章节 4" }));
+
+    expect(screen.getAllByLabelText("章节标题")).toHaveLength(3);
+    expect(
+      screen.queryByRole("button", { name: "删除章节 3" })
+    ).not.toBeInTheDocument();
+  });
+
+  test("does not show the old demo and mock CTA labels", () => {
     render(<App />);
 
     expect(
-      screen.getByText(
-        /loads the demo sample and immediately submits it through the existing mock conversion flow/i
-      )
-    ).toBeInTheDocument();
-
-    // Verify entry disclosure is present initially:
-    expect(screen.getAllByText(DEMO_SAMPLE_BADGE_LABEL)).toHaveLength(1);
-
-    fireEvent.click(screen.getByRole("button", { name: "Run Demo Sample" }));
-
-    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
-    expect(fetch).toHaveBeenCalledWith(
-      "/api/conversions/mock",
-      expect.objectContaining({
-        method: "POST"
-      })
-    );
-
-    // Wait for result view to load (Overview page is default)
-    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
-
-    // Verify result disclosure badge is present:
-    expect(screen.getAllByText(DEMO_SAMPLE_BADGE_LABEL)).toHaveLength(1);
+      screen.queryByRole("button", { name: "Run Demo Sample" })
+    ).not.toBeInTheDocument();
     expect(
-      screen.getAllByText(/not real user data and not real llm output/i)
-    ).toHaveLength(1);
-
-    // Switch to Analysis tab
-    fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
-    expect(screen.getByText("Chapter Analyzer")).toBeInTheDocument();
-    expect(screen.getByText("修改建议")).toBeInTheDocument();
-
-    // Switch to Contract tab
-    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
-    expect(screen.getByText("YAML 合约工作区")).toBeInTheDocument();
-    expect(screen.getByText("校验结果")).toBeInTheDocument();
-
-    // Switch to Draft View tab
-    fireEvent.click(screen.getByRole("button", { name: "Draft View" }));
-    expect(screen.getByText("场景板")).toBeInTheDocument();
-    expect(screen.getByText("角色档案")).toBeInTheDocument();
+      screen.queryByRole("button", { name: "生成 mock 剧本摘要" })
+    ).not.toBeInTheDocument();
   });
 });

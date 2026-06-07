@@ -1,7 +1,7 @@
 import type {
   ApiErrorResponse,
   ConversionFormValues,
-  MockConversionResponse
+  ConversionResponse
 } from "../types";
 
 function isApiErrorResponse(value: unknown): value is ApiErrorResponse {
@@ -27,10 +27,10 @@ async function extractApiErrorMessage(response: Response): Promise<string> {
   return "提交失败，请检查章节内容或稍后重试";
 }
 
-export async function submitMockConversion(
+export async function submitRealConversion(
   payload: ConversionFormValues
-): Promise<MockConversionResponse> {
-  const response = await fetch("/api/conversions/mock", {
+): Promise<ConversionResponse> {
+  const response = await fetch("/api/conversions/real", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -42,5 +42,5 @@ export async function submitMockConversion(
     throw new Error(await extractApiErrorMessage(response));
   }
 
-  return (await response.json()) as MockConversionResponse;
+  return (await response.json()) as ConversionResponse;
 }

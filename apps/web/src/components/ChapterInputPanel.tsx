@@ -10,6 +10,8 @@ interface ChapterInputPanelProps {
     field: keyof ChapterFormValue,
     value: string
   ) => void;
+  onAddChapter: () => void;
+  onRemoveChapter: (chapterIndex: number) => void;
 }
 
 function handleChange(
@@ -23,7 +25,9 @@ function handleChange(
 
 export function ChapterInputPanel({
   chapters,
-  onChapterChange
+  onChapterChange,
+  onAddChapter,
+  onRemoveChapter
 }: ChapterInputPanelProps) {
   return (
     <div className="space-y-6">
@@ -37,9 +41,18 @@ export function ChapterInputPanel({
             Provide chapter details and content. Long chapters will scroll internally to protect screen space.
           </p>
         </div>
-        <span className="text-xs bg-[var(--bg-paper-soft)] px-2.5 py-1 rounded text-[var(--text-muted)] border border-[var(--line-soft)] uppercase tracking-[0.1em] font-semibold">
-          默认 3 章
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs bg-[var(--bg-paper-soft)] px-2.5 py-1 rounded text-[var(--text-muted)] border border-[var(--line-soft)] uppercase tracking-[0.1em] font-semibold">
+            默认 3 章
+          </span>
+          <button
+            className="cta-button cta-secondary"
+            type="button"
+            onClick={onAddChapter}
+          >
+            添加章节
+          </button>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -62,6 +75,16 @@ export function ChapterInputPanel({
                 <span className="text-xs text-[var(--text-muted)] font-mono">
                   {chapter.title || "未命名章节"}
                 </span>
+                {chapters.length > 3 && index >= 3 && (
+                  <button
+                    aria-label={`删除章节 ${index + 1}`}
+                    className="cta-button cta-secondary"
+                    type="button"
+                    onClick={() => onRemoveChapter(index)}
+                  >
+                    删除章节
+                  </button>
+                )}
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">

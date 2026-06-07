@@ -22,10 +22,11 @@ export interface ApiErrorResponse {
   };
 }
 
-export interface MockConversionResponse {
+export interface ConversionResponse {
   conversion_id: string;
   status: "completed";
   mode: AdaptationMode;
+  source: "mock" | "real_llm";
   input_summary: {
     title: string;
     chapter_count: number;
@@ -33,7 +34,7 @@ export interface MockConversionResponse {
   };
   screenplay: ScreenplayDocument;
   warnings: string[];
-  mock: true;
+  mock: boolean;
 }
 
 export type SubmissionState = "idle" | "loading" | "error" | "success";

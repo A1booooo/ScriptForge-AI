@@ -41,6 +41,7 @@ export function createMockConversionResponse(
     conversion_id: `mock-${Date.now()}`,
     status: "completed",
     mode: request.adaptation_mode,
+    source: "mock",
     input_summary: {
       title: request.title,
       chapter_count: request.chapters.length,

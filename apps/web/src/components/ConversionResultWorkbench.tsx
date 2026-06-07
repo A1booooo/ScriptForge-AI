@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { validateScreenplayYaml } from "@scriptforge/shared";
 import { FileText, BarChart2, ShieldCheck, AlignLeft } from "lucide-react";
 
-import type { MockConversionResponse } from "../types";
+import type { ConversionResponse } from "../types";
 import {
   analyzeChapterAdaptation,
   type SubmittedSourceSnapshot
@@ -22,13 +22,11 @@ import { ValidationResultPanel } from "./ValidationResultPanel";
 import { YamlPreviewPanel } from "./YamlPreviewPanel";
 
 interface ConversionResultWorkbenchProps {
-  isDemoSample: boolean;
-  result: MockConversionResponse;
+  result: ConversionResponse;
   sourceSnapshot: SubmittedSourceSnapshot;
 }
 
 export function ConversionResultWorkbench({
-  isDemoSample,
   result,
   sourceSnapshot
 }: ConversionResultWorkbenchProps) {
@@ -142,7 +140,7 @@ export function ConversionResultWorkbench({
               </h3>
             </div>
             <div className="result-overview-grid">
-              <ConversionResultSummary isDemoSample={isDemoSample} result={result} />
+              <ConversionResultSummary result={result} />
               <AdaptationQualityScorePanel score={adaptationQualityScore} />
             </div>
           </section>

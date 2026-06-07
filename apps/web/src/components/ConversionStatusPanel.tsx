@@ -18,7 +18,7 @@ export function ConversionStatusPanel({
           <div>
             <p className="section-kicker">Loading</p>
             <h2 className="mt-1 text-base font-semibold text-[var(--text-strong)]">
-              正在提交章节到 mock conversion API...
+              正在请求真实 LLM 剧本生成...
             </h2>
           </div>
         </div>
@@ -59,7 +59,7 @@ export function ConversionStatusPanel({
         <div>
           <p className="section-kicker">Idle</p>
           <h2 className="mt-1 text-base font-semibold text-[var(--text-strong)]">
-            等待生成 mock 剧本摘要
+            等待真实 AI 生成剧本
           </h2>
         </div>
       </div>
