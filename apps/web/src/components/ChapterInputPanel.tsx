@@ -42,7 +42,8 @@ export function ChapterInputPanel({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs bg-[var(--bg-paper-soft)] px-2.5 py-1 rounded text-[var(--text-muted)] border border-[var(--line-soft)] uppercase tracking-[0.1em] font-semibold">
+          <span className="inline-flex items-center gap-1.5 text-[11px] bg-[var(--bg-paper-soft)] px-2.5 py-0.5 rounded-full text-[var(--text-muted)] border border-[var(--line-soft)] font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--text-muted)] opacity-60" />
             默认 3 章
           </span>
           <button

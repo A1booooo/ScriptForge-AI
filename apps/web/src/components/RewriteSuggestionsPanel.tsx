@@ -20,6 +20,28 @@ const signalSourceLabels: Record<string, string> = {
     "生成的剧本 scenes[].chapter_refs、scenes[].beats、scenes[].adaptation_notes、T10 章节分析场景机会以及 T11 结构就绪度维度"
 };
 
+function translateTarget(target: string): string {
+  if (target.startsWith("scene:")) {
+    return `场景 ${target.slice(6)}`;
+  }
+  if (target.startsWith("chapter:")) {
+    return `章节 ${target.slice(8)}`;
+  }
+  if (target.startsWith("character:")) {
+    return `角色 ${target.slice(10)}`;
+  }
+  if (target === "draft:dialogue-layer") {
+    return "草稿对话层";
+  }
+  if (target === "draft:pacing") {
+    return "草稿节奏";
+  }
+  if (target === "draft:scene-compression") {
+    return "草稿场景压缩";
+  }
+  return target;
+}
+
 function translateDialogueReason(reason: string): string {
   let text = reason;
   text = text.replace("Strengthen:", "增强建议:");
@@ -127,15 +149,15 @@ export function RewriteSuggestionsPanel({
         {description}
       </div>
 
-      <div className="space-y-6 divide-y divide-[var(--line-soft)]">
+      <div className="space-y-6">
         {suggestions.suggestions.map((suggestion) => {
           const isPacing = suggestion.mode.includes("pacing");
           const isScene = suggestion.mode.includes("scene");
           const accentClass = isPacing 
-            ? "border-l-4 border-[var(--color-accent-sky)] pl-4" 
+            ? "border-l-4 border-l-[var(--color-accent-sky)]" 
             : isScene 
-              ? "border-l-4 border-[var(--color-accent-violet)] pl-4" 
-              : "border-l-4 border-[var(--color-accent-emerald)] pl-4";
+              ? "border-l-4 border-l-[var(--color-accent-violet)]" 
+              : "border-l-4 border-l-[var(--color-accent-emerald)]";
 
           const badgeBg = isPacing
             ? "bg-[rgba(76,143,214,0.08)] text-[#3f75b1] border-[rgba(76,143,214,0.32)]"
@@ -146,38 +168,40 @@ export function RewriteSuggestionsPanel({
           return (
             <article
               key={`${suggestion.mode}-${suggestion.target}`}
-              className={`studio-report-item ${accentClass} pt-6 first:pt-0 border-t-0`}
+              className={`p-5 md:p-6 rounded-lg border border-[var(--line-soft)] bg-[var(--bg-paper)] shadow-sm ${accentClass} flex flex-col gap-4`}
             >
               {/* Top: Mode badge and target */}
-              <div className="flex flex-wrap items-center gap-3">
-                <span className={`rounded border px-2.5 py-0.5 text-xs font-semibold uppercase ${badgeBg}`}>
-                  <span>建议类型</span>: <span>{modeLabels[suggestion.mode] || suggestion.mode}</span>
-                  <span className="sr-only">{suggestion.mode}</span>
-                </span>
-                <span className="text-sm font-semibold text-[var(--text-strong)]">
-                  <span>作用对象</span>: <span>{suggestion.target}</span>
-                </span>
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--line-soft)] pb-3">
+                <div className="flex items-center">
+                  <span className={`rounded border px-2.5 py-0.5 text-xs font-semibold uppercase ${badgeBg}`}>
+                    <span>建议类型</span>: <span>{modeLabels[suggestion.mode] || suggestion.mode}</span>
+                    <span className="sr-only">{suggestion.mode}</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+                  <span className="font-semibold text-[var(--text-strong)]">作用对象</span>: <span className="font-medium text-[var(--text-strong)]">{translateTarget(suggestion.target)}</span>
+                </div>
               </div>
 
               {/* Middle: Reason */}
-              <div className="mt-3">
+              <div className="space-y-1">
                 <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
                   建议原因
                 </p>
-                <p className="mt-1 text-sm text-[var(--text-strong)] leading-6">
+                <p className="text-sm text-[var(--text-strong)] leading-6">
                   {translateReason(suggestion.mode, suggestion.reason)}
                 </p>
               </div>
 
               {/* Bottom: Signal source (collapsible summary details) */}
-              <div className="mt-3">
+              <div className="pt-2 border-t border-[var(--line-soft)]">
                 <details className="group">
                   <summary className="text-[11px] font-bold text-[var(--text-muted)] cursor-pointer hover:text-[var(--text-strong)] transition-colors select-none flex items-center gap-1">
                     <span>信号来源</span> (点击展开/收起)
                   </summary>
-                  <p className="mt-1.5 text-xs text-[var(--text-muted)] leading-relaxed pl-3 border-l border-[var(--line-soft)] italic">
+                  <div className="mt-2 text-xs text-[var(--text-muted)] leading-relaxed pl-3 border-l border-[var(--line-soft)] bg-[var(--bg-page)] p-3 rounded italic">
                     {signalSourceLabels[suggestion.signalSource] || suggestion.signalSource}
-                  </p>
+                  </div>
                 </details>
               </div>
             </article>

@@ -167,16 +167,16 @@ export function analyzeChapterAdaptation({
     if (status === "covered") {
       const evidenceLines = [
         ...(sceneTitles.length > 0
-          ? [`Scene refs: ${sceneTitles.join(", ")}`]
+          ? [`场景引用 scene_refs: ${sceneTitles.join(", ")}`]
           : []),
-        ...(beatLabels.length > 0 ? [`Beat refs: ${beatLabels.join(", ")}`] : [])
+        ...(beatLabels.length > 0 ? [`节拍引用 beat_refs: ${beatLabels.join(", ")}`] : [])
       ];
 
       return {
         chapterId: chapter.id,
         chapterTitle: chapter.title,
         status,
-        summary: `Explicit references were found for this chapter in generated screenplay chapter_refs or beat source_chapter_ids.`,
+        summary: `已在生成剧本的场景章节引用 chapter_refs 或节拍来源章节 beat.source_chapter_ids 中找到明确引用。`,
         evidence: evidenceLines
       } satisfies ChapterCoverageItem;
     }
@@ -186,8 +186,8 @@ export function analyzeChapterAdaptation({
       chapterTitle: chapter.title,
       status,
       summary:
-        "No explicit chapter reference found in generated screenplay chapter_refs or beat source_chapter_ids.",
-      evidence: ["No explicit scene or beat reference was found by the current deterministic rules."]
+        "未在生成剧本的场景章节引用 chapter_refs 或节拍来源章节 beat.source_chapter_ids 中找到明确引用。",
+      evidence: ["当前确定性规则未发现明确的场景或节拍引用。"]
     } satisfies ChapterCoverageItem;
   });
 
@@ -200,33 +200,39 @@ export function analyzeChapterAdaptation({
     "此面板基于提交的源章节及生成的剧本结构进行确定性规则分析，不涉及模型二次创作推理。"
   ];
 
+  const modeLabels: Record<string, string> = {
+    faithful: "忠实改编",
+    dramatic: "戏剧强化",
+    short_drama: "微短剧化"
+  };
+  const modeLabel = modeLabels[sourceSnapshot.adaptationMode] || sourceSnapshot.adaptationMode;
   adaptationChoices.push(
-    `Submitted adaptation mode: ${sourceSnapshot.adaptationMode}. Source snapshot title: ${sourceSnapshot.title}.`
+    `提交的改编模式为：${modeLabel}。源章节标题为：${sourceSnapshot.title}。`
   );
 
   if (sceneCount < chapterCount) {
     adaptationChoices.push(
-      `The generated draft compresses ${chapterCount} submitted chapters into ${sceneCount} scenes.`
+      `生成剧本压缩为 ${sceneCount} 个场景（源章节共 ${chapterCount} 章）。`
     );
   } else if (sceneCount > chapterCount) {
     adaptationChoices.push(
-      `The generated draft expands ${chapterCount} submitted chapters into ${sceneCount} scenes.`
+      `生成剧本扩展为 ${sceneCount} 个场景（源章节共 ${chapterCount} 章）。`
     );
   } else {
     adaptationChoices.push(
-      `The generated draft keeps an even ${chapterCount}-chapter to ${sceneCount}-scene count.`
+      `生成剧本保持 ${chapterCount} 个源章节与 ${sceneCount} 个场景的一对一对应。`
     );
   }
 
   if (mergedSceneCount > 0) {
     adaptationChoices.push(
-      `${mergedSceneCount} generated scene(s) merge multiple chapter references, which is an explicit compression choice visible in chapter_refs.`
+      `${mergedSceneCount} 个生成场景合并了多个章节引用，这是当前剧本中的压缩改编选择。`
     );
   }
 
   if (adaptationNotesCount > 0) {
     adaptationChoices.push(
-      `${adaptationNotesCount} explicit adaptation note(s) were found in metadata.adaptation_notes or scene.adaptation_notes.`
+      `在元数据 metadata.adaptation_notes 或场景改编备注 scene.adaptation_notes 中发现了 ${adaptationNotesCount} 条明确的改编说明。`
     );
   }
 
@@ -241,7 +247,7 @@ export function analyzeChapterAdaptation({
 
     if (chapter.status === "unreferenced") {
       return [
-        `${chapter.chapterId} contains conflict keywords (${matchedKeywords.join(", ")}) but no explicit chapter reference was found in the generated draft.`
+        `${chapter.chapterId} 包含冲突关键字 (${matchedKeywords.join(", ")})，但在生成的剧本草稿中未找到明确的章节引用。`
       ];
     }
 
@@ -254,7 +260,7 @@ export function analyzeChapterAdaptation({
 
     if (!hasConflictField) {
       return [
-        `${chapter.chapterId} contains conflict keywords (${matchedKeywords.join(", ")}) but the explicitly linked generated scenes do not provide a scene conflict field.`
+        `${chapter.chapterId} 包含冲突关键字 (${matchedKeywords.join(", ")})，但显式关联的生成场景中未提供场景冲突字段。`
       ];
     }
 
@@ -263,7 +269,7 @@ export function analyzeChapterAdaptation({
 
   if (missingConflicts.length === 0) {
     missingConflicts.push(
-      "No conflict gaps were flagged by the current deterministic rules."
+      "当前规则未发现明显的冲突缺口。"
     );
   }
 
@@ -273,27 +279,27 @@ export function analyzeChapterAdaptation({
     .filter((chapter) => chapter.status === "unreferenced")
     .forEach((chapter) => {
       sceneOpportunities.push(
-        `Add or revise a scene/beat that explicitly references ${chapter.chapterId} if this chapter should remain visible in the generated draft.`
+        `如果该章节在生成的剧本草稿中需要保持可见，请添加或修改一个显式引用 ${chapter.chapterId} 的场景或节拍。`
       );
     });
 
   if (mergedSceneCount > 0) {
     sceneOpportunities.push(
-      `Because ${mergedSceneCount} scene(s) merge multiple chapter references, a bridge scene could be added if you want to preserve omitted transitions without changing the schema.`
+      "由于部分场景合并了多个章节引用，如需保留过渡细节，可以补充桥段场景。"
     );
   }
 
   if (uncoveredCharacters.length > 0) {
     sceneOpportunities.push(
-      `The generated draft has ${uncoveredCharacters.length} character(s) with no scene appearance (${uncoveredCharacters
+      `生成的剧本草稿中有 ${uncoveredCharacters.length} 个角色没有在场景中出场 (${uncoveredCharacters
         .map((character) => character.name)
-        .join(", ")}), which is a deterministic signal for a possible scene restore or reassignment.`
+        .join(", ")})，这是可能需要恢复场景或重新分配角色的确定性信号。`
     );
   }
 
   if (sceneOpportunities.length === 0) {
     sceneOpportunities.push(
-      "No additional scene opportunities were triggered by the current deterministic rules."
+      "当前确定性规则未触发其他场景拓展建议。"
     );
   }
 
