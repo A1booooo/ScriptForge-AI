@@ -108,8 +108,35 @@ function parseDraftAsJson(draftText: string): unknown {
   }
 }
 
-function validateDraftCandidate(candidate: unknown) {
-  const schemaValidated = validateScreenplayDocument(candidate);
+function normalizeScreenplayTitle(
+  candidate: unknown,
+  canonicalTitle: string
+): unknown {
+  if (typeof candidate !== "object" || candidate === null) {
+    return candidate;
+  }
+
+  const candidateRecord = candidate as Record<string, unknown>;
+
+  if (
+    typeof candidateRecord.metadata !== "object" ||
+    candidateRecord.metadata === null
+  ) {
+    return candidate;
+  }
+
+  return {
+    ...candidateRecord,
+    metadata: {
+      ...(candidateRecord.metadata as Record<string, unknown>),
+      title: canonicalTitle
+    }
+  };
+}
+
+function validateDraftCandidate(candidate: unknown, canonicalTitle: string) {
+  const normalizedCandidate = normalizeScreenplayTitle(candidate, canonicalTitle);
+  const schemaValidated = validateScreenplayDocument(normalizedCandidate);
 
   if (!schemaValidated.ok) {
     throw new LlmClientError(
@@ -174,9 +201,10 @@ export async function createRealConversionResponse(
   );
 
   const parsedCandidate = parseDraftAsJson(draft.draftText);
+  const canonicalTitle = request.title.trim();
 
   try {
-    const screenplay = validateDraftCandidate(parsedCandidate);
+    const screenplay = validateDraftCandidate(parsedCandidate, canonicalTitle);
 
     return toRealConversionResponse(request, screenplay);
   } catch (error) {
@@ -193,7 +221,10 @@ export async function createRealConversionResponse(
           { llmClient }
         );
         const repairedCandidate = parseDraftAsJson(repairDraft.draftText);
-        const screenplay = validateDraftCandidate(repairedCandidate);
+        const screenplay = validateDraftCandidate(
+          repairedCandidate,
+          canonicalTitle
+        );
 
         return toRealConversionResponse(request, screenplay);
       } catch (repairError) {

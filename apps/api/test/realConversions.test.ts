@@ -306,7 +306,7 @@ describe("POST /api/conversions/real", () => {
 
     expect(response.statusCode).toBe(200);
     expect(generateDraft).toHaveBeenCalledTimes(2);
-    expect(response.json().screenplay.metadata.title).toBe("Repaired Draft");
+    expect(response.json().screenplay.metadata.title).toBe("Fog Harbor Chase");
   });
 
   it("does not trigger repair when the provider payload is malformed JSON", async () => {
@@ -428,5 +428,45 @@ describe("POST /api/conversions/real", () => {
     expect(body.screenplay.quality_hints.coverage_notes).toEqual([
       "Real flow covers all submitted chapters."
     ]);
+  });
+
+  it("uses request.title as the canonical screenplay title when provider JSON returns an unrelated title", async () => {
+    const app = buildServer({
+      llmClient: {
+        async generateDraft() {
+          return {
+            provider: "openai_compatible",
+            model: "test-model",
+            draftText: JSON.stringify({
+              ...sampleScreenplay,
+              metadata: {
+                ...sampleScreenplay.metadata,
+                title: "Unrelated Provider Title",
+                adaptation_mode: "dramatic",
+                source_chapters: validPayload.chapters.map((chapter, index) => ({
+                  chapter_id: chapter.id,
+                  chapter_title: chapter.title,
+                  chapter_order: index + 1,
+                  summary: chapter.content
+                }))
+              }
+            }),
+            finishReason: "stop"
+          };
+        }
+      }
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/conversions/real",
+      payload: validPayload
+    });
+
+    const body = response.json();
+
+    expect(response.statusCode).toBe(200);
+    expect(body.screenplay.metadata.title).toBe(validPayload.title);
+    expect(body.input_summary.title).toBe(validPayload.title);
   });
 });
