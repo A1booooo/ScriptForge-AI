@@ -111,9 +111,20 @@ corepack.cmd pnpm --filter @scriptforge/web dev
 
 兜底：
 
-1. 配置 `.env` 或当前 shell 环境中的 `LLM_API_KEY`
-2. 重启 API
-3. 重新提交
+1. 确认已复制并配置本地环境变量文件：
+   ```powershell
+   Copy-Item apps/api/.env.example apps/api/.env
+   ```
+   并在 `apps/api/.env` 中正确填写 `LLM_API_KEY`。请注意不要将 `.env` 提交到 GitHub。
+2. 重启 API 服务：
+   ```bash
+   corepack.cmd pnpm --filter @scriptforge/api dev
+   ```
+3. 重启 Web 服务：
+   ```bash
+   corepack.cmd pnpm --filter @scriptforge/web dev
+   ```
+4. 重新提交生成。
 
 ### 情况 2：真实 provider 返回结构不合法
 

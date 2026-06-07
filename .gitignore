@@ -1,8 +1,11 @@
-﻿node_modules/
+node_modules/
 dist/
 coverage/
+.DS_Store
+.pnpm-store/
+
+# Local Environment variables
 .env
 .env.local
-.DS_Store
-
-.pnpm-store/
+apps/api/.env
+apps/api/.env.local

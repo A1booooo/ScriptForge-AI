@@ -85,31 +85,53 @@ Schema 设计细节请见 [docs/schema.md](./docs/schema.md)。
 
 ## 本地启动
 
-安装依赖：
+### 1. 安装依赖
 
 ```bash
 corepack.cmd pnpm install
 ```
 
-启动 API：
+### 2. 配置环境变量
+
+本地开发时，需要配置 API 的环境变量。请复制模版文件：
+
+```powershell
+Copy-Item apps/api/.env.example apps/api/.env
+```
+
+（在 Linux/macOS 下请使用 `cp apps/api/.env.example apps/api/.env`）
+
+然后打开 `apps/api/.env` 并填写你自己的 `LLM_API_KEY`。默认参数模板如下：
+
+```env
+LLM_PROVIDER=openai_compatible
+LLM_MODEL=deepseek-chat
+LLM_API_KEY=your-actual-api-key
+LLM_BASE_URL=https://api.deepseek.com
+LLM_TIMEOUT_MS=120000
+```
+
+> [!WARNING]
+> 请勿将包含真实 API Key 的 `.env` 文件提交到 GitHub。该文件已被列入 `.gitignore` 中。
+
+### 3. 启动 API
 
 ```bash
 corepack.cmd pnpm --filter @scriptforge/api dev
 ```
 
-启动 Web：
+### 4. 启动 Web
 
 ```bash
 corepack.cmd pnpm --filter @scriptforge/web dev
 ```
 
-默认地址：
+### 5. 默认地址与代理
 
 - API: `http://127.0.0.1:3001`
 - Web: `http://127.0.0.1:5173`
 
 补充说明：
-
 - `apps/web` 在 Vite 开发环境下会把 `/api/*` 代理到 `http://127.0.0.1:3001`。
 - 本地联调时应先启动 API，再启动 Web。
 
