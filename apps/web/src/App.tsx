@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
+import { Sparkles } from "lucide-react";
 
 import { submitMockConversion } from "./api/conversions";
 import { AdaptationModeSelector } from "./components/AdaptationModeSelector";
@@ -7,6 +8,7 @@ import { ChapterInputPanel } from "./components/ChapterInputPanel";
 import { ConversionResultWorkbench } from "./components/ConversionResultWorkbench";
 import { ConversionStatusPanel } from "./components/ConversionStatusPanel";
 import { WorkbenchHeader } from "./components/WorkbenchHeader";
+import { WorkflowStrip } from "./components/WorkflowStrip";
 import type { SubmittedSourceSnapshot } from "./lib/chapterAnalysis";
 import {
   DEMO_SAMPLE_BADGE_LABEL,
@@ -32,6 +34,7 @@ export default function App() {
   const [isDemoSampleResult, setIsDemoSampleResult] = useState(false);
   const [submittedSourceSnapshot, setSubmittedSourceSnapshot] =
     useState<SubmittedSourceSnapshot | null>(null);
+  const [viewMode, setViewMode] = useState<"input" | "result">("input");
 
   function updateChapter(
     chapterIndex: number,
@@ -102,6 +105,7 @@ export default function App() {
         chapters: submittedPayload.chapters
       });
       setSubmissionState("success");
+      setViewMode("result");
     } catch (error) {
       setSubmissionState("error");
       setSubmittedSourceSnapshot(null);
@@ -125,128 +129,174 @@ export default function App() {
   }
 
   const isSubmitting = submissionState === "loading";
+  const isSuccess = submissionState === "success";
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_35%),linear-gradient(180deg,_#101113_0%,_#0a0b0c_100%)] text-zinc-100">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-5 py-6 sm:px-8 lg:px-10">
-        <WorkbenchHeader />
+    <div className="min-h-screen text-[var(--text-strong)] bg-[var(--bg-page)] pb-16">
+      {/* Brand & Status Bar (Sticky, non-blocking) */}
+      <nav className="brand-app-bar">
+        <div className="flex items-center gap-2">
+          <span className="brand-title">ScriptForge AI 剧本工坊</span>
+        </div>
+        <div className="hidden md:block text-xs font-semibold text-[var(--text-muted)] tracking-wider">
+          小说章节到结构化剧本工作台
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--bg-paper-soft)] border border-[var(--line-soft)] text-[var(--text-muted)] uppercase tracking-wider">
+            本地 Demo / Mock API / YAML Contract
+          </span>
+        </div>
+      </nav>
 
-        <main className="mt-6 grid flex-1 gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
-          <form
-            className="space-y-6 border border-zinc-800 bg-zinc-950/60 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:p-6"
-            onSubmit={handleSubmit}
-          >
-            <section className="space-y-5">
-              <div className="space-y-2">
-                <label
-                  className="text-sm font-medium tracking-[0.18em] text-zinc-300 uppercase"
-                  htmlFor="project-title"
+      <div className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col px-6 lg:px-8">
+        {viewMode === "input" ? (
+          <div className="animate-view-fade-in flex flex-col">
+            <WorkbenchHeader />
+            <WorkflowStrip isSuccess={isSuccess} />
+            <main className="mt-4 flex flex-1 flex-col gap-10">
+              {/* Main Layout Grid */}
+              <div className="grid gap-8 grid-cols-1 lg:grid-cols-12">
+                {/* Left Input Workspace Card */}
+                <form
+                  className="source-configuration-card lg:col-span-8 flex flex-col gap-6"
+                  onSubmit={handleSubmit}
                 >
-                  项目标题
-                </label>
-                <p className="text-sm leading-6 text-zinc-500">
-                  用一个清晰项目名标记本次剧本转换请求，便于后续扩展历史记录与结果管理。
-                </p>
-              </div>
-              <input
-                id="project-title"
-                aria-label="项目标题"
-                className="w-full rounded-none border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none transition duration-200 ease-out placeholder:text-zinc-600 hover:border-zinc-500 focus:border-zinc-100 focus:ring-2 focus:ring-zinc-300/20"
-                placeholder="例如：雾港追缉令"
-                type="text"
-                value={formValues.title}
-                onChange={(event) =>
-                  setFormValues((currentValues) => ({
-                    ...currentValues,
-                    title: event.target.value
-                  }))
-                }
-              />
-            </section>
+                  <div className="space-y-6">
+                    <div className="border-b border-[var(--line-soft)] pb-4">
+                      <p className="section-kicker">Step 1: Source Configuration</p>
+                      <h2 className="text-xl font-bold tracking-tight text-[var(--text-strong)] mt-1">
+                        输入源文本与基础设定
+                      </h2>
+                    </div>
 
-            <AdaptationModeSelector
-              value={formValues.adaptation_mode}
-              onChange={(nextMode) =>
-                setFormValues((currentValues) => ({
-                  ...currentValues,
-                  adaptation_mode: nextMode
-                }))
-              }
-            />
+                    {/* Side-by-side Configuration */}
+                    <div className="grid gap-6 md:grid-cols-2 border-b border-[var(--line-soft)] pb-6">
+                      <div className="space-y-2">
+                        <label className="field-kicker" htmlFor="project-title">
+                          项目标题
+                        </label>
+                        <input
+                          id="project-title"
+                          aria-label="项目标题"
+                          className="input-control"
+                          placeholder="例如：雾港追缉令"
+                          type="text"
+                          value={formValues.title}
+                          onChange={(event) =>
+                            setFormValues((currentValues) => ({
+                              ...currentValues,
+                              title: event.target.value
+                            }))
+                          }
+                        />
+                      </div>
 
-            <ChapterInputPanel
-              chapters={formValues.chapters}
-              onChapterChange={updateChapter}
-            />
+                      <AdaptationModeSelector
+                        value={formValues.adaptation_mode}
+                        onChange={(nextMode) =>
+                          setFormValues((currentValues) => ({
+                            ...currentValues,
+                            adaptation_mode: nextMode
+                          }))
+                        }
+                      />
+                    </div>
 
-            <div className="space-y-4 border-t border-zinc-800 pt-5">
-              <div className="border border-amber-500/40 bg-amber-500/10 px-4 py-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="border border-amber-300/50 px-2 py-1 text-[11px] font-semibold tracking-[0.18em] text-amber-200 uppercase">
-                    {DEMO_SAMPLE_BADGE_LABEL}
-                  </span>
-                  <p className="text-sm leading-6 text-amber-100/85">
-                    {DEMO_SAMPLE_NOTE}
-                  </p>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-amber-100/75">
-                  Run Demo Sample loads the demo sample and immediately submits it through the existing mock conversion flow.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm leading-6 text-zinc-500">
-                  当前结果区会展示 Chapter Analyzer、Adaptation Quality Score、Rewrite Suggestions、YAML Workspace、Validation Result、Scene Board 和 Character Bible。
-                </p>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <button
-                    className="inline-flex min-w-56 items-center justify-center gap-3 rounded-none border border-amber-300 bg-amber-300 px-5 py-3 text-sm font-medium text-zinc-950 transition duration-200 ease-out hover:bg-transparent hover:text-amber-200 active:translate-y-px disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900 disabled:text-zinc-500"
-                    disabled={isSubmitting}
-                    type="button"
-                    onClick={() => {
-                      void handleRunDemoSample();
-                    }}
-                  >
-                    Run Demo Sample
-                  </button>
-                  <button
-                    className="inline-flex min-w-56 items-center justify-center gap-3 rounded-none border border-zinc-100 bg-zinc-100 px-5 py-3 text-sm font-medium text-zinc-950 transition duration-200 ease-out hover:bg-transparent hover:text-zinc-100 active:translate-y-px disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900 disabled:text-zinc-500"
-                    disabled={isSubmitting}
-                    type="submit"
-                  >
-                    <span
-                      className={`inline-block h-2.5 w-2.5 rounded-full ${
-                        isSubmitting ? "animate-pulse bg-zinc-950" : "bg-zinc-950"
-                      }`}
+                    {/* Chapter Panel */}
+                    <ChapterInputPanel
+                      chapters={formValues.chapters}
+                      onChapterChange={updateChapter}
                     />
-                    {isSubmitting ? "提交中..." : "生成 mock 剧本摘要"}
-                  </button>
-                </div>
+
+                    {/* CTA Action Panel */}
+                    <section className="space-y-6 border-t border-[var(--line-soft)] pt-6">
+                      <div className="support-surface rounded-[0.25rem] p-5">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="rounded border border-[rgba(216,155,43,0.42)] bg-[rgba(216,155,43,0.08)] px-2.5 py-0.5 text-xs font-semibold text-[#996a14] uppercase">
+                            {DEMO_SAMPLE_BADGE_LABEL}
+                          </span>
+                          <p className="text-sm leading-6 text-[var(--text-muted)]">
+                            {DEMO_SAMPLE_NOTE}
+                          </p>
+                        </div>
+                        <p className="mt-3 text-xs leading-5 text-[var(--text-muted)] border-t border-[var(--line-soft)] pt-3">
+                          Run Demo Sample loads the demo sample and immediately submits it through the existing mock conversion flow.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <p className="max-w-md text-xs leading-5 text-[var(--text-muted)]">
+                          当前结果区会展示 Chapter Analyzer、Adaptation Quality Score、Rewrite Suggestions、YAML Workspace、Validation Result、Scene Board 和 Character Bible。
+                        </p>
+                        <div className="flex flex-wrap gap-3">
+                          {result && (
+                            <button
+                              className="cta-button cta-secondary w-full sm:w-auto"
+                              type="button"
+                              onClick={() => setViewMode("result")}
+                            >
+                              查看生成结果
+                            </button>
+                          )}
+                          <button
+                            className="cta-button cta-secondary w-full sm:w-auto"
+                            disabled={isSubmitting}
+                            type="button"
+                            onClick={handleRunDemoSample}
+                          >
+                            Run Demo Sample
+                          </button>
+                          <button
+                            className="cta-button cta-primary w-full sm:w-auto"
+                            disabled={isSubmitting}
+                            type="submit"
+                          >
+                            {isSubmitting && (
+                              <span className="inline-block h-2.5 w-2.5 rounded-full animate-pulse bg-[#1f1d1a] mr-2" />
+                            )}
+                            <Sparkles className="w-3.5 h-3.5" />
+                            {isSubmitting ? "提交中..." : "生成 mock 剧本摘要"}
+                          </button>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </form>
+
+                {/* Right Status Sidebar */}
+                <aside className="lg:col-span-4 space-y-6 self-start lg:sticky lg:top-20">
+                  <div className="support-surface rounded-[0.25rem] p-5">
+                    <p className="section-kicker">Status Panel</p>
+                  </div>
+                  <ConversionStatusPanel
+                    errorMessage={errorMessage}
+                    state={submissionState}
+                  />
+                </aside>
               </div>
+            </main>
+          </div>
+        ) : (
+          <div className="animate-view-fade-in flex flex-col mt-6">
+            <div className="flex flex-wrap items-center justify-between border-b border-[var(--line-soft)] pb-4 mb-4 gap-4">
+              <button
+                type="button"
+                className="cta-button cta-secondary"
+                onClick={() => setViewMode("input")}
+              >
+                ← 返回修改章节
+              </button>
+              <WorkflowStrip isSuccess={isSuccess} />
             </div>
-          </form>
-
-          <aside className="space-y-4">
-            <div className="border border-zinc-800 bg-black/20 p-4">
-              <p className="text-xs tracking-[0.22em] text-zinc-500 uppercase">
-                Status Panel
-              </p>
-            </div>
-
-            {submissionState === "success" && result && submittedSourceSnapshot ? (
+            {result && submittedSourceSnapshot && (
               <ConversionResultWorkbench
                 isDemoSample={isDemoSampleResult}
                 result={result}
                 sourceSnapshot={submittedSourceSnapshot}
               />
-            ) : (
-              <ConversionStatusPanel
-                errorMessage={errorMessage}
-                state={submissionState}
-              />
             )}
-          </aside>
-        </main>
+          </div>
+        )}
       </div>
     </div>
   );

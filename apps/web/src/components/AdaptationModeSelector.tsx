@@ -1,4 +1,5 @@
 import { ADAPTATION_MODES, type AdaptationMode } from "@scriptforge/shared";
+import { Sliders } from "lucide-react";
 
 const modeLabels: Record<AdaptationMode, string> = {
   faithful: "faithful · 忠实改编",
@@ -16,21 +17,21 @@ export function AdaptationModeSelector({
   onChange
 }: AdaptationModeSelectorProps) {
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <label
-          className="text-sm font-medium tracking-[0.18em] text-zinc-300 uppercase"
-          htmlFor="adaptation-mode"
-        >
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-4">
+        <label className="field-kicker flex items-center gap-1.5" htmlFor="adaptation-mode">
+          <Sliders className="w-3.5 h-3.5 text-[var(--color-primary)]" />
           改编模式
         </label>
-        <span className="text-xs text-zinc-500">仅使用 T03 Mock API</span>
+        <span className="text-xs text-[var(--text-muted)]">
+          仅使用 T03 Mock API
+        </span>
       </div>
       <div className="relative">
         <select
           id="adaptation-mode"
           aria-label="改编模式"
-          className="w-full appearance-none rounded-none border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none transition duration-200 ease-out hover:border-zinc-500 focus:border-zinc-100 focus:ring-2 focus:ring-zinc-300/20"
+          className="input-control appearance-none cursor-pointer pr-10"
           value={value}
           onChange={(event) => onChange(event.target.value as AdaptationMode)}
         >
@@ -40,8 +41,8 @@ export function AdaptationModeSelector({
             </option>
           ))}
         </select>
-        <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs tracking-[0.2em] text-zinc-500 uppercase">
-          Select
+        <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs font-semibold tracking-wider text-[var(--text-muted)] uppercase">
+          ▼
         </span>
       </div>
     </div>

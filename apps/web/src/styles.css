@@ -1,15 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
-    sans-serif;
-  --font-serif: "Iowan Old Style", "Source Han Serif SC", "Noto Serif SC", serif;
+  --font-heading: Georgia, "Songti SC", "SimSun", serif;
+  --font-body: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  --font-code: "JetBrains Mono", Consolas, Monaco, monospace;
 }
 
 :root {
-  color-scheme: dark;
-  font-family: var(--font-sans);
-  background-color: #09090b;
+  color-scheme: light;
+  background-color: #f7f1e8;
+  
+  --bg-page: #f7f1e8;
+  --bg-paper: #fffdfc;
+  --bg-paper-soft: #f4ede6;
+  --bg-paper-tint: #e8e1db;
+  
+  --line-soft: #ded6c9;
+  --line-strong: #837563;
+  
+  --text-strong: #1e1b17;
+  --text-muted: #5e5a55;
+  --text-kicker: #7a736c;
+  
+  --color-primary: #7f5600;
+  --color-primary-container: #d89b2b;
+  --color-on-primary-container: #523600;
+  
+  --color-accent-sky: #4c8fd6;
+  --color-accent-emerald: #3d8b6d;
+  --color-accent-violet: #7b6fd6;
+  
+  --shadow-soft: 0px 4px 20px rgba(31, 29, 26, 0.04);
+  --motion-standard: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -24,36 +46,407 @@ body,
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.06), transparent 35%),
-    linear-gradient(180deg, #101113 0%, #0a0b0c 100%);
-  color: #f4f4f5;
+  background-color: var(--bg-page);
+  color: var(--text-strong);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
 }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
+/* Scroll margin support for anchor navigation targets */
+#overview,
+#analysis,
+#contract,
+#draft-view {
+  scroll-margin-top: 5rem;
 }
 
-@keyframes panel-enter {
+/* 1. App Shell Elements */
+.brand-app-bar {
+  background-color: var(--bg-paper);
+  border-bottom: 1px solid var(--line-soft);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  box-shadow: 0 2px 8px rgba(31, 29, 26, 0.02);
+}
+
+.brand-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* 2. Workflow Strip */
+.workflow-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.workflow-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 150ms ease;
+}
+
+.workflow-step-num {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  border: 1px solid var(--line-soft);
+}
+
+.workflow-step.active {
+  color: var(--color-primary);
+}
+
+.workflow-step.active .workflow-step-num {
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  border-color: transparent;
+}
+
+/* 3. Input Cards */
+.source-configuration-card {
+  border: 1px solid var(--line-soft);
+  background-color: var(--bg-paper);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.chapter-editor-card {
+  border: 1px solid var(--line-soft);
+  background-color: var(--bg-paper);
+  border-radius: 0.25rem;
+  padding: 1.5rem;
+  transition: border-color 150ms ease;
+}
+
+.chapter-editor-card:focus-within {
+  border-color: var(--line-strong);
+}
+
+.chapter-editor-card textarea {
+  min-height: 180px;
+  max-height: 260px;
+  overflow-y: auto;
+  resize: vertical;
+}
+
+/* 4. Result Workbench Layouts */
+.result-workbench {
+  border: 1px solid var(--line-soft);
+  background-color: var(--bg-paper);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.result-navigation-strip {
+  display: flex;
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--line-soft);
+  padding-bottom: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.result-navigation-strip button {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  transition: all 150ms ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.result-navigation-strip button:hover {
+  color: var(--color-primary);
+  background-color: var(--bg-paper-soft);
+}
+
+.result-navigation-strip button.active {
+  color: var(--color-primary);
+  background-color: var(--bg-paper-soft);
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+
+.result-overview-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .result-overview-grid {
+    grid-template-columns: minmax(0, 2fr) 1fr;
+  }
+}
+
+/* Score Circular Gauge */
+.score-gauge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-soft);
+  background-color: var(--bg-paper);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+
+/* 5. Flat Reports & Panels */
+.studio-report-panel {
+  border: 1px solid var(--line-soft);
+  background-color: var(--bg-paper);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.studio-report-panel-header {
+  border-bottom: 1px solid var(--line-soft);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.studio-report-item {
+  border-bottom: 1px solid var(--line-soft);
+  padding: 1.5rem 0;
+}
+
+.studio-report-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* 6. YAML Dark Editor */
+.yaml-dark-editor {
+  border: 1px solid var(--line-strong);
+  background-color: #33302C;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.yaml-dark-editor-header {
+  background-color: #262422;
+  border-bottom: 1px solid #1e1b17;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.yaml-dark-editor pre,
+.yaml-dark-editor textarea {
+  background-color: #33302C !important;
+  color: #F7F0E9 !important;
+  font-family: var(--font-code) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+  border: none !important;
+  outline: none !important;
+  padding: 1.5rem !important;
+}
+
+.yaml-dark-editor textarea:focus {
+  box-shadow: none !important;
+}
+
+/* 7. Scene Board manuscript view */
+.scene-reading-panel {
+  border: 1px solid var(--line-soft);
+  background-color: var(--bg-paper);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.scene-reading-item {
+  border-bottom: 1px solid var(--line-soft);
+  padding: 2rem 0;
+}
+
+.scene-reading-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.scene-reading-item:first-child {
+  padding-top: 0;
+}
+
+/* 8. Character Bible Sidebar */
+.character-support-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.character-support-card {
+  border: 1px solid var(--line-soft);
+  background-color: var(--bg-paper);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.character-support-item {
+  border-bottom: 1px dashed var(--line-soft);
+  padding: 1rem 0;
+}
+
+.character-support-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.character-support-item:first-child {
+  padding-top: 0;
+}
+
+/* Standard typography & UI tokens */
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 150ms var(--motion-standard);
+}
+
+.cta-primary {
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  border: none;
+}
+
+.cta-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.cta-secondary {
+  border: 1px solid var(--line-soft);
+  background-color: transparent;
+  color: var(--text-strong);
+}
+
+.cta-secondary:hover:not(:disabled) {
+  background-color: var(--bg-paper-soft);
+  transform: translateY(-1px);
+}
+
+.input-control {
+  width: 100%;
+  border: 1px solid var(--line-soft);
+  background-color: var(--bg-paper);
+  color: var(--text-strong);
+  font-family: var(--font-body);
+  border-radius: 0.25rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input-control:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+  outline: none;
+}
+
+.field-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.section-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Resizable divider style overrides */
+.PanelResizeHandle {
+  width: 8px !important;
+  background-color: var(--line-soft) !important;
+  border-left: 1px solid var(--line-strong) !important;
+  border-right: 1px solid var(--line-strong) !important;
+  cursor: col-resize !important;
+  transition: background-color 150ms ease !important;
+}
+
+.PanelResizeHandle:hover,
+.PanelResizeHandle[data-resize-handle-state="drag"] {
+  background-color: var(--line-strong) !important;
+}
+
+@keyframes viewFadeIn {
   from {
     opacity: 0;
     transform: translateY(8px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.panel-enter {
-  animation: panel-enter 220ms ease-out;
+.animate-view-fade-in {
+  animation: viewFadeIn 250ms var(--motion-standard) forwards;
 }
 
-pre,
-code {
-  font-variant-ligatures: none;
+@media (prefers-reduced-motion: reduce) {
+  @keyframes viewFadeInReduced {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .animate-view-fade-in {
+    animation: viewFadeInReduced 250ms ease forwards;
+  }
 }

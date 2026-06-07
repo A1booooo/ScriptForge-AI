@@ -1,3 +1,4 @@
+import { Info, AlertTriangle } from "lucide-react";
 import {
   DEMO_SAMPLE_BADGE_LABEL,
   DEMO_SAMPLE_NOTE
@@ -9,77 +10,70 @@ interface ConversionResultSummaryProps {
   result: MockConversionResponse;
 }
 
-function SummaryItem({
-  label,
-  value
-}: {
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <div className="border border-zinc-800 bg-zinc-950/70 px-4 py-4">
-      <dt className="text-[11px] tracking-[0.18em] text-zinc-500 uppercase">
-        {label}
-      </dt>
-      <dd className="mt-2 text-sm font-medium text-zinc-100">{value}</dd>
-    </div>
-  );
-}
-
 export function ConversionResultSummary({
   isDemoSample,
   result
 }: ConversionResultSummaryProps) {
   return (
-    <section className="panel-enter space-y-4 border border-zinc-800 bg-zinc-950/80 p-5 text-zinc-100 shadow-[0_18px_40px_rgba(0,0,0,0.28)]">
-      <div className="space-y-2">
-        <p className="text-xs tracking-[0.18em] text-zinc-500 uppercase">
-          Conversion Ready
-        </p>
-        <h2 className="text-xl font-semibold text-white">
+    <div className="bg-[var(--bg-paper)] border border-[var(--line-soft)] rounded-[0.25rem] p-6 shadow-[var(--shadow-soft)]">
+      <div className="space-y-2 border-b border-[var(--line-soft)] pb-4">
+        <p className="section-kicker">Conversion Ready</p>
+        <h4 className="text-lg font-bold text-[var(--text-strong)]">
           Mock screenplay draft generated
-        </h2>
-        <p className="text-sm leading-6 text-zinc-400">
-          The result panel now separates generated YAML, editable YAML, validation status, and generated-draft reference views.
+        </h4>
+        <p className="text-xs text-[var(--text-muted)]">
+          The generated draft, YAML contract, and draft references are now ready for review.
         </p>
       </div>
 
-      <dl className="grid gap-3 sm:grid-cols-2">
-        <SummaryItem label="Conversion ID" value={result.conversion_id} />
-        <SummaryItem label="Mock" value={result.mock ? "Yes" : "No"} />
-        <SummaryItem
-          label="Chapter Count"
-          value={result.input_summary.chapter_count}
-        />
-        <SummaryItem
-          label="Screenplay Title"
-          value={result.screenplay.metadata.title}
-        />
+      <dl className="mt-4 grid gap-4 grid-cols-2 md:grid-cols-4 border-b border-[var(--line-soft)] pb-4">
+        <div>
+          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Conversion ID</dt>
+          <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)]">{result.conversion_id}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Mock State</dt>
+          <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)]">{result.mock ? "Yes" : "No"}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Chapter Count</dt>
+          <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)]">{result.input_summary.chapter_count}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Screenplay Title</dt>
+          <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)] truncate">{result.screenplay.metadata.title}</dd>
+        </div>
       </dl>
 
-      {isDemoSample ? (
-        <div className="border border-amber-500/30 bg-amber-500/10 px-4 py-4">
-          <p className="text-xs tracking-[0.18em] text-amber-200 uppercase">
-            {DEMO_SAMPLE_BADGE_LABEL}
-          </p>
-          <p className="mt-2 text-sm leading-6 text-amber-100/85">
-            {DEMO_SAMPLE_NOTE}
-          </p>
+      {isDemoSample && (
+        <div className="mt-4 rounded-[0.25rem] border border-[rgba(216,155,43,0.32)] bg-[rgba(216,155,43,0.04)] p-4 flex gap-2">
+          <Info className="w-4 h-4 text-[#996a14] flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-[10px] font-bold tracking-wider text-[#996a14] uppercase">
+              {DEMO_SAMPLE_BADGE_LABEL}
+            </p>
+            <p className="mt-1 text-xs text-[#76572a]">
+              {DEMO_SAMPLE_NOTE}
+            </p>
+          </div>
         </div>
-      ) : null}
+      )}
 
-      {result.warnings.length > 0 ? (
-        <div className="border border-amber-500/30 bg-amber-500/10 px-4 py-4">
-          <p className="text-xs tracking-[0.18em] text-amber-200 uppercase">
-            Mock response notes
-          </p>
-          <ul className="mt-3 space-y-2 text-sm leading-6 text-amber-100/85">
-            {result.warnings.map((warning) => (
-              <li key={warning}>{warning}</li>
-            ))}
-          </ul>
+      {result.warnings.length > 0 && (
+        <div className="mt-4 rounded-[0.25rem] border border-[rgba(216,155,43,0.32)] bg-[rgba(216,155,43,0.04)] p-4 flex gap-2">
+          <AlertTriangle className="w-4 h-4 text-[#996a14] flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-[10px] font-bold tracking-wider text-[#996a14] uppercase">
+              Mock response notes
+            </p>
+            <ul className="mt-2 space-y-1 text-xs text-[#76572a] list-disc list-inside">
+              {result.warnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+          </div>
         </div>
-      ) : null}
-    </section>
+      )}
+    </div>
   );
 }

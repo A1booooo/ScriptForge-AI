@@ -1,4 +1,5 @@
 import type { SceneDisplayItem } from "../lib/screenplayDisplay";
+import { MessageSquare, Link, Sparkles } from "lucide-react";
 
 interface SceneBoardSceneCardProps {
   scene: SceneDisplayItem;
@@ -6,7 +7,7 @@ interface SceneBoardSceneCardProps {
 
 function Pill({ children }: { children: string }) {
   return (
-    <span className="inline-flex items-center border border-zinc-700 bg-zinc-900/80 px-2.5 py-1 text-[11px] tracking-[0.12em] text-zinc-300 uppercase">
+    <span className="inline-flex items-center rounded bg-[var(--bg-paper-soft)] border border-[var(--line-soft)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-muted)] tracking-wide uppercase">
       {children}
     </span>
   );
@@ -14,41 +15,37 @@ function Pill({ children }: { children: string }) {
 
 export function SceneBoardSceneCard({ scene }: SceneBoardSceneCardProps) {
   return (
-    <article className="border border-zinc-800 bg-zinc-950/70 p-5 shadow-[0_14px_30px_rgba(0,0,0,0.22)]">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-800 pb-4">
-        <div className="space-y-2">
-          <p className="text-[11px] tracking-[0.22em] text-zinc-500 uppercase">
+    <article className="scene-reading-item space-y-4">
+      {/* Scene Header */}
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--line-soft)] pb-3">
+        <div className="flex items-center gap-3">
+          <span className="font-heading text-2xl font-bold text-[var(--color-primary)]">
             {scene.id}
-          </p>
-          <h4 className="font-['Iowan_Old_Style','Source_Han_Serif_SC','Noto_Serif_SC',serif] text-xl leading-tight text-white">
+          </span>
+          <h4 className="font-heading text-lg font-bold text-[var(--text-strong)] uppercase tracking-wide">
             {scene.title}
           </h4>
         </div>
         <div className="flex flex-wrap gap-2">
           <Pill>{scene.locationName}</Pill>
           <Pill>{scene.timeOfDay}</Pill>
-          <Pill>{`${scene.dialogueCount} dialogue`}</Pill>
+          <Pill>{`${scene.dialogueCount} 条对话`}</Pill>
         </div>
       </div>
 
-      <div className="grid gap-4 pt-4 md:grid-cols-2">
-        <section className="space-y-3">
+      {/* Scene Details */}
+      <div className="pl-6 border-l-2 border-[var(--line-soft)] hover:border-[var(--line-strong)] transition-colors grid gap-6 md:grid-cols-2">
+        <section className="space-y-4">
           <div>
-            <p className="text-[11px] tracking-[0.18em] text-zinc-500 uppercase">
-              Summary
-            </p>
-            <p className="mt-2 text-sm leading-6 text-zinc-200">{scene.summary}</p>
+            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">场次摘要</p>
+            <p className="mt-1 text-sm leading-6 text-[var(--text-strong)]">{scene.summary}</p>
           </div>
           <div>
-            <p className="text-[11px] tracking-[0.18em] text-zinc-500 uppercase">
-              Conflict
-            </p>
-            <p className="mt-2 text-sm leading-6 text-zinc-300">{scene.conflict}</p>
+            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">核心冲突</p>
+            <p className="mt-1 text-sm leading-6 text-[var(--text-strong)]">{scene.conflict}</p>
           </div>
           <div>
-            <p className="text-[11px] tracking-[0.18em] text-zinc-500 uppercase">
-              Linked Characters
-            </p>
+            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">登场角色</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {scene.characterNames.map((characterName) => (
                 <Pill key={characterName}>{characterName}</Pill>
@@ -56,9 +53,7 @@ export function SceneBoardSceneCard({ scene }: SceneBoardSceneCardProps) {
             </div>
           </div>
           <div>
-            <p className="text-[11px] tracking-[0.18em] text-zinc-500 uppercase">
-              Chapter Refs
-            </p>
+            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">关联章节</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {scene.chapterTitles.map((chapterTitle) => (
                 <Pill key={chapterTitle}>{chapterTitle}</Pill>
@@ -67,53 +62,63 @@ export function SceneBoardSceneCard({ scene }: SceneBoardSceneCardProps) {
           </div>
         </section>
 
-        <section className="space-y-3">
+        <section className="space-y-4">
           <div>
-            <p className="text-[11px] tracking-[0.18em] text-zinc-500 uppercase">
-              Beats
+            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              剧情节奏点
             </p>
-            <ul className="mt-2 space-y-2 text-sm leading-6 text-zinc-300">
+            <ul className="mt-2 space-y-2">
               {scene.beats.map((beat) => (
-                <li key={beat.id} className="border border-zinc-800 bg-black/20 px-3 py-3">
-                  <p className="font-medium text-zinc-100">{beat.summary}</p>
-                  <p className="mt-1 text-xs leading-5 text-zinc-400">{beat.purpose}</p>
+                <li
+                  key={beat.id}
+                  className="rounded bg-[var(--bg-paper-soft)] border border-[var(--line-soft)] p-3 space-y-1"
+                >
+                  <p className="text-xs font-bold text-[var(--text-strong)]">
+                    {beat.summary}
+                  </p>
+                  <p className="text-xs text-[var(--text-muted)] leading-5">
+                    {beat.purpose}
+                  </p>
                 </li>
               ))}
             </ul>
           </div>
 
           <div>
-            <p className="text-[11px] tracking-[0.18em] text-zinc-500 uppercase">
-              Dialogue Snapshot
+            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1">
+              <MessageSquare className="w-3.5 h-3.5" />
+              对话快照
             </p>
             {scene.representativeDialogue ? (
-              <div className="mt-2 border border-zinc-800 bg-black/20 px-3 py-3">
-                <p className="text-xs tracking-[0.16em] text-zinc-500 uppercase">
+              <div className="mt-2 rounded bg-[var(--bg-paper-soft)] border border-[var(--line-soft)] p-3 text-xs leading-5">
+                <span className="font-bold text-[var(--color-primary)] uppercase tracking-wide">
                   {scene.representativeDialogue.characterName}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-zinc-200">
-                  {scene.representativeDialogue.line}
+                </span>
+                <p className="mt-1 text-[var(--text-strong)] italic">
+                  "{scene.representativeDialogue.line}"
                 </p>
               </div>
             ) : (
-              <p className="mt-2 text-sm leading-6 text-zinc-500">
-                No dialogue line is available for this scene.
+              <p className="mt-1 text-xs text-[var(--text-muted)]">
+                本场戏没有对话快照。
               </p>
             )}
           </div>
 
-          {scene.adaptationNotes.length > 0 ? (
+          {scene.adaptationNotes.length > 0 && (
             <div>
-              <p className="text-[11px] tracking-[0.18em] text-zinc-500 uppercase">
-                Adaptation Notes
+              <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1">
+                <Link className="w-3.5 h-3.5" />
+                改编批注
               </p>
-              <ul className="mt-2 space-y-2 text-sm leading-6 text-zinc-400">
+              <ul className="mt-2 space-y-1 text-xs text-[var(--text-muted)] list-disc list-inside">
                 {scene.adaptationNotes.map((note) => (
-                  <li key={note}>{note}</li>
+                  <li key={note} className="marker:text-[var(--text-muted)]">{note}</li>
                 ))}
               </ul>
             </div>
-          ) : null}
+          )}
         </section>
       </div>
     </article>

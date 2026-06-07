@@ -1,31 +1,39 @@
 export function WorkbenchHeader() {
   return (
-    <header className="border border-zinc-800 bg-zinc-950/70 px-5 py-6 shadow-[0_20px_60px_rgba(0,0,0,0.32)] backdrop-blur-sm">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-3">
-          <p className="text-xs tracking-[0.28em] text-zinc-500 uppercase">
-            ScriptForge AI / 剧本工坊
-          </p>
-          <div className="space-y-2">
-            <h1 className="font-['Iowan_Old_Style','Source_Han_Serif_SC','Noto_Serif_SC',serif] text-3xl leading-tight text-white sm:text-4xl">
-              ScriptForge AI 剧本工坊
+    <header className="py-8">
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1.2fr)_360px]">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="font-heading text-3xl font-semibold text-[var(--color-primary)] tracking-tight">
+              ScriptForge AI
+            </span>
+            <span className="rounded border border-[var(--line-soft)] bg-[var(--bg-paper-soft)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-muted)]">
+              剧本工坊
+            </span>
+          </div>
+          <div className="space-y-3">
+            <h1 className="font-heading text-4xl font-semibold leading-tight text-[var(--text-strong)] sm:text-5xl">
+              小说章节到结构化剧本工作台
             </h1>
-            <p className="max-w-3xl text-sm leading-7 text-zinc-400 sm:text-base">
-              把小说章节转换为可编辑、可校验的结构化剧本草稿。
+            <p className="max-w-3xl text-lg leading-8 text-[var(--text-muted)] font-body">
+              将小说章节转成可编辑、可校验、可导出的结构化剧本工作台。
             </p>
           </div>
         </div>
 
-        <div className="space-y-2 text-left lg:max-w-sm lg:text-right">
-          <p className="text-sm font-medium text-zinc-100">
-            T04：章节输入工作台 · Mock API
-          </p>
-          <p className="text-sm leading-6 text-zinc-500">
-            将 3 个以上小说章节提交到 mock conversion API，生成结构化剧本草稿摘要。
-          </p>
-          <p className="text-xs tracking-[0.14em] text-zinc-600 uppercase">
-            当前为 Mock API 演示链路，尚未接入真实 LLM。
-          </p>
+        <div className="bg-[var(--bg-paper)] border border-[var(--line-soft)] rounded-[0.25rem] p-5 shadow-[var(--shadow-soft)]">
+          <p className="section-kicker">Product Narrative</p>
+          <div className="mt-3 space-y-3 text-sm leading-6 text-[var(--text-muted)] font-body">
+            <p className="font-semibold text-[var(--text-strong)]">
+              T04：章节输入工作台 · Mock API
+            </p>
+            <p>
+              本系统当前为本地 Mock API 演示链路，尚未接入真实大语言模型 (LLM)。
+            </p>
+            <p className="text-xs text-[var(--text-muted)] border-t border-[var(--line-soft)] pt-2 mt-2">
+              Enter at least three source chapters, choose an adaptation mode, and generate a local mock screenplay workspace.
+            </p>
+          </div>
         </div>
       </div>
     </header>
