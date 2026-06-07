@@ -4,10 +4,14 @@ import type { SubmissionState } from "../types";
 interface ConversionStatusPanelProps {
   state: SubmissionState;
   errorMessage: string | null;
+  errorCode?: string;
+  errorDetails?: string[];
 }
 
 export function ConversionStatusPanel({
   state,
+  errorCode,
+  errorDetails,
   errorMessage
 }: ConversionStatusPanelProps) {
   if (state === "loading") {
@@ -45,8 +49,20 @@ export function ConversionStatusPanel({
             </h2>
           </div>
         </div>
-        <div className="bg-[rgba(196,82,82,0.04)] px-5 py-4 text-xs leading-6 text-[var(--color-error)]">
-          {errorMessage}
+        <div className="bg-[rgba(196,82,82,0.04)] px-5 py-4 text-xs leading-6 text-[var(--color-error)] space-y-3">
+          <div>{errorMessage}</div>
+          {errorCode === "schema_validation_failed" &&
+            errorDetails &&
+            errorDetails.length > 0 && (
+              <div className="space-y-1">
+                <p className="font-semibold">Schema 问题摘要：</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  {errorDetails.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
         </div>
       </section>
     );

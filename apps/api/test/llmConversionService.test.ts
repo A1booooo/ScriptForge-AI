@@ -48,8 +48,14 @@ describe("generateLlmConversionDraft", () => {
     );
 
     expect(capturedSystemPrompt).toContain("screenplay development assistant");
+    expect(capturedSystemPrompt).toContain("snake_case");
+    expect(capturedSystemPrompt).toContain("Do not add extra top-level fields");
     expect(capturedPrompt).toContain("Project title: River Street Mystery");
     expect(capturedPrompt).toContain("Adaptation mode: dramatic");
+    expect(capturedPrompt).toContain("schema_version must equal");
+    expect(capturedPrompt).toContain("metadata.source_chapters must cover every submitted chapter");
+    expect(capturedPrompt).toContain("\"schema_version\"");
+    expect(capturedPrompt).toContain("\"location_id\"");
     expect(capturedPrompt).toContain("[chapter_01] Dawn Letter");
     expect(result).toEqual({
       provider: "openai_compatible",

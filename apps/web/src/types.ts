@@ -19,7 +19,14 @@ export interface ApiErrorResponse {
   error?: {
     code?: string;
     message?: string;
+    details?: string[];
   };
+}
+
+export interface SubmissionErrorState {
+  code?: string;
+  message: string;
+  details?: string[];
 }
 
 export interface ConversionResponse {

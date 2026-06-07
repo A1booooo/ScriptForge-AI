@@ -8,12 +8,14 @@ import type {
 
 export function createApiError(
   code: ApiErrorResponse["error"]["code"],
-  message: string
+  message: string,
+  details?: string[]
 ): ApiErrorResponse {
   return {
     error: {
       code,
-      message
+      message,
+      ...(details && details.length > 0 ? { details } : {})
     }
   };
 }

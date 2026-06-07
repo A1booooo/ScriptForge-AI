@@ -6,11 +6,15 @@ import {
 import { createLlmClient } from "../llm/factory.js";
 import { LlmClientError } from "../llm/errors.js";
 import type { LlmClient } from "../llm/client.js";
-import { generateLlmConversionDraft } from "./llmConversionService.js";
+import {
+  generateLlmConversionDraft,
+  generateLlmRepairDraft
+} from "./llmConversionService.js";
 import type {
   MockConversionRequest,
   RealConversionResponse
 } from "../types.js";
+import { summarizeValidationIssues } from "./validationIssueSummary.js";
 
 interface CreateRealConversionResponseDependencies {
   createLlmClient?: typeof createLlmClient;
@@ -110,7 +114,10 @@ function validateDraftCandidate(candidate: unknown) {
   if (!schemaValidated.ok) {
     throw new LlmClientError(
       "schema_validation_failed",
-      "Provider response did not satisfy the screenplay schema."
+      "Provider response did not satisfy the screenplay schema.",
+      {
+        details: summarizeValidationIssues(schemaValidated.issues)
+      }
     );
   }
 
@@ -123,7 +130,10 @@ function validateDraftCandidate(candidate: unknown) {
 
     throw new LlmClientError(
       "schema_validation_failed",
-      firstIssue?.message ?? "Provider response failed consistency checks."
+      firstIssue?.message ?? "Provider response failed consistency checks.",
+      {
+        details: summarizeValidationIssues(consistencyValidated.issues)
+      }
     );
   }
 
@@ -164,7 +174,52 @@ export async function createRealConversionResponse(
   );
 
   const parsedCandidate = parseDraftAsJson(draft.draftText);
-  const screenplay = validateDraftCandidate(parsedCandidate);
 
-  return toRealConversionResponse(request, screenplay);
+  try {
+    const screenplay = validateDraftCandidate(parsedCandidate);
+
+    return toRealConversionResponse(request, screenplay);
+  } catch (error) {
+    if (
+      error instanceof LlmClientError &&
+      error.code === "schema_validation_failed"
+    ) {
+      try {
+        const repairDraft = await generateLlmRepairDraft(
+          {
+            originalDraft: parsedCandidate,
+            validationDetails: error.details ?? []
+          },
+          { llmClient }
+        );
+        const repairedCandidate = parseDraftAsJson(repairDraft.draftText);
+        const screenplay = validateDraftCandidate(repairedCandidate);
+
+        return toRealConversionResponse(request, screenplay);
+      } catch (repairError) {
+        if (repairError instanceof LlmClientError) {
+          if (repairError.code === "provider_response_invalid") {
+            throw new LlmClientError(
+              "schema_validation_failed",
+              "Repair response did not satisfy the screenplay schema.",
+              {
+                details:
+                  error.details && error.details.length > 0
+                    ? error.details
+                    : ["repair output was not a valid JSON object"]
+              }
+            );
+          }
+
+          if (repairError.code === "schema_validation_failed") {
+            throw repairError;
+          }
+        }
+
+        throw repairError;
+      }
+    }
+
+    throw error;
+  }
 }

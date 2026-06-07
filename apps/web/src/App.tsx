@@ -2,7 +2,10 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
 
-import { submitRealConversion } from "./api/conversions";
+import {
+  ApiRequestError,
+  submitRealConversion
+} from "./api/conversions";
 import { AdaptationModeSelector } from "./components/AdaptationModeSelector";
 import { ChapterInputPanel } from "./components/ChapterInputPanel";
 import { ConversionResultWorkbench } from "./components/ConversionResultWorkbench";
@@ -24,6 +27,7 @@ import type {
   ChapterFormValue,
   ConversionFormValues,
   ConversionResponse,
+  SubmissionErrorState,
   SubmissionState
 } from "./types";
 
@@ -62,7 +66,8 @@ function getSubmissionError(formValues: ConversionFormValues): string | null {
 export default function App() {
   const [formValues, setFormValues] = useState(createInitialFormValues);
   const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [submissionError, setSubmissionError] =
+    useState<SubmissionErrorState | null>(null);
   const [result, setResult] = useState<ConversionResponse | null>(null);
   const [submittedSourceSnapshot, setSubmittedSourceSnapshot] =
     useState<SubmittedSourceSnapshot | null>(null);
@@ -118,12 +123,12 @@ export default function App() {
       setSubmissionState("error");
       setResult(null);
       setSubmittedSourceSnapshot(null);
-      setErrorMessage(validationError);
+      setSubmissionError({ message: validationError });
       return;
     }
 
     setSubmissionState("loading");
-    setErrorMessage(null);
+    setSubmissionError(null);
     setResult(null);
     setSubmittedSourceSnapshot(null);
 
@@ -151,10 +156,19 @@ export default function App() {
     } catch (error) {
       setSubmissionState("error");
       setSubmittedSourceSnapshot(null);
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "提交失败，请检查章节内容或稍后重试"
+      setSubmissionError(
+        error instanceof ApiRequestError
+          ? {
+              message: error.message,
+              ...(error.code ? { code: error.code } : {}),
+              ...(error.details ? { details: error.details } : {})
+            }
+          : {
+              message:
+                error instanceof Error
+                  ? error.message
+                  : "提交失败，请检查章节内容或稍后重试"
+            }
       );
     }
   }
@@ -166,7 +180,7 @@ export default function App() {
 
   function handleLoadSampleInput() {
     setFormValues(sampleInputFormValues);
-    setErrorMessage(null);
+    setSubmissionError(null);
     setSubmissionState("idle");
     setResult(null);
     setSubmittedSourceSnapshot(null);
@@ -187,7 +201,7 @@ export default function App() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--bg-paper-soft)] border border-[var(--line-soft)] text-[var(--text-muted)] uppercase tracking-wider">
-            真实 LLM / YAML 合约 / Schema 校验
+            真实 LLM / YAML 契约 / Schema 校验
           </span>
         </div>
       </nav>
@@ -261,13 +275,16 @@ export default function App() {
                           </p>
                         </div>
                         <p className="mt-3 text-xs leading-5 text-[var(--text-muted)] border-t border-[var(--line-soft)] pt-3">
-                          加载示例章节只会填充原创中文输入素材，不会请求 mock 接口，也不会直接进入结果工作台。
+                          加载示例章节只会填充原创中文输入素材，不会请求 mock
+                          接口，也不会直接进入结果工作台。
                         </p>
                       </div>
 
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <p className="max-w-md text-xs leading-5 text-[var(--text-muted)]">
-                          当前结果区会继续复用 Chapter Analyzer、Adaptation Quality Score、Rewrite Suggestions、YAML Workspace、Validation Result、Scene Board 和 Character Bible。
+                          当前结果区会继续复用 Chapter Analyzer、Adaptation
+                          Quality Score、Rewrite Suggestions、YAML Workspace、Validation
+                          Result、Scene Board 和 Character Bible。
                         </p>
                         <div className="flex flex-wrap gap-3">
                           {result && (
@@ -309,8 +326,14 @@ export default function App() {
                     <p className="section-kicker">Status Panel</p>
                   </div>
                   <ConversionStatusPanel
-                    errorMessage={errorMessage}
+                    errorMessage={submissionError?.message ?? null}
                     state={submissionState}
+                    {...(submissionError?.code
+                      ? { errorCode: submissionError.code }
+                      : {})}
+                    {...(submissionError?.details
+                      ? { errorDetails: submissionError.details }
+                      : {})}
                   />
                 </aside>
               </div>
@@ -324,7 +347,7 @@ export default function App() {
                 className="cta-button cta-secondary"
                 onClick={() => setViewMode("input")}
               >
-                ← 返回修改章节
+                返回修改章节
               </button>
               <WorkflowStrip isSuccess={isSuccess} />
             </div>

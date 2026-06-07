@@ -218,7 +218,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
     expect(screen.getByText("River Street Mystery")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "← 返回修改章节" }));
+    fireEvent.click(screen.getByRole("button", { name: "返回修改章节" }));
 
     fireEvent.change(screen.getByLabelText("项目标题"), {
       target: { value: "Changed After Submit" }
@@ -273,7 +273,7 @@ describe("App", () => {
       }
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "← 返回修改章节" }));
+    fireEvent.click(screen.getByRole("button", { name: "返回修改章节" }));
     fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
     expect(await screen.findByText("conv_real_002", {}, { timeout: 3000 })).toBeInTheDocument();
@@ -423,5 +423,61 @@ describe("App", () => {
     expect(
       screen.queryByRole("button", { name: "生成 mock 剧本摘要" })
     ).not.toBeInTheDocument();
+  });
+  test("shows schema validation details when the real request returns safe summaries", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: {
+            code: "schema_validation_failed",
+            message: "生成结果未通过 Schema 校验",
+            details: [
+              "missing required field: scenes[0].location_id",
+              "dialogue character_id references unknown character: scenes[0].dialogue[0].character_id"
+            ]
+          }
+        }),
+        {
+          status: 502,
+          headers: { "Content-Type": "application/json" }
+        }
+      )
+    );
+
+    render(<App />);
+    fillMinimumValidForm();
+
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
+
+    expect(await screen.findByText("生成结果未通过 Schema 校验")).toBeInTheDocument();
+    expect(screen.getByText("Schema 问题摘要：")).toBeInTheDocument();
+    expect(
+      screen.getByText("missing required field: scenes[0].location_id")
+    ).toBeInTheDocument();
+  });
+
+  test("keeps the existing error display when no schema details are returned", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: {
+            code: "schema_validation_failed",
+            message: "生成结果未通过 Schema 校验"
+          }
+        }),
+        {
+          status: 502,
+          headers: { "Content-Type": "application/json" }
+        }
+      )
+    );
+
+    render(<App />);
+    fillMinimumValidForm();
+
+    fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
+
+    expect(await screen.findByText("生成结果未通过 Schema 校验")).toBeInTheDocument();
+    expect(screen.queryByText("Schema 问题摘要：")).not.toBeInTheDocument();
   });
 });
