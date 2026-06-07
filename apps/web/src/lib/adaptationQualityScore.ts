@@ -148,7 +148,7 @@ function createConflictClarityDimension(
     (scene) => scene.conflict.trim().length === 0
   ).length;
   const missingConflictSignals = chapterAnalysis.missingConflicts.filter(
-    (item) => item !== "No conflict gaps were flagged by the current deterministic rules."
+    (item) => item !== "当前规则未发现明显的冲突缺口。"
   );
   let score = 100;
 

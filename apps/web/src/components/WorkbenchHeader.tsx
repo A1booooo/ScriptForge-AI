@@ -31,7 +31,7 @@ export function WorkbenchHeader() {
               当前主链路已接入真实 LLM conversion，生成结果会先经过 shared schema 校验与一致性检查。
             </p>
             <p className="text-xs text-[var(--text-muted)] border-t border-[var(--line-soft)] pt-2 mt-2">
-              Enter at least three source chapters, choose an adaptation mode, and generate a structured screenplay draft through the real LLM flow.
+              输入至少三个源章节，选择改编模式，并通过真实的 LLM 流程生成结构化的剧本草稿。
             </p>
           </div>
         </div>
