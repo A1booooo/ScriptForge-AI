@@ -15,5 +15,11 @@ export function isMockResult(
 export function getResultSourceLabel(
   source: ConversionResponse["source"]
 ): string {
+  if (source === "real_llm") {
+    return "真实 AI 转换";
+  }
+  if (source === "mock") {
+    return "示例数据 / Mock";
+  }
   return source;
 }

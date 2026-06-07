@@ -46,7 +46,7 @@ export interface ChapterCoverageItem {
 }
 
 export interface ChapterAnalysisResult {
-  isDemoAnalysis: true;
+  isDeterministicAnalysis: true;
   sourceTitle: string;
   adaptationMode: AdaptationMode;
   chapterCount: number;
@@ -197,7 +197,7 @@ export function analyzeChapterAdaptation({
   const unreferencedChapterCount = chapterCount - coveredChapterCount;
 
   const adaptationChoices = [
-    "This panel is deterministic Demo analysis based on the submitted source snapshot and explicit generated screenplay references."
+    "此面板基于提交的源章节及生成的剧本结构进行确定性规则分析，不涉及模型二次创作推理。"
   ];
 
   adaptationChoices.push(
@@ -298,7 +298,7 @@ export function analyzeChapterAdaptation({
   }
 
   return {
-    isDemoAnalysis: true,
+    isDeterministicAnalysis: true,
     sourceTitle: sourceSnapshot.title,
     adaptationMode: sourceSnapshot.adaptationMode,
     chapterCount,

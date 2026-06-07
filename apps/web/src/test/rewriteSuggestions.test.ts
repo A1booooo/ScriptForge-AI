@@ -59,10 +59,9 @@ describe("getRewriteSuggestions", () => {
       adaptationQualityScore
     });
 
-    expect(result.badgeLabel).toBe("Deterministic Demo suggestions");
-    expect(result.description).toContain("not a real LLM rewrite");
-    expect(result.description).toContain("not auto-applied");
-    expect(result.description).toContain("does not modify YAML");
+    expect(result.badgeLabel).toBe("结构规则建议");
+    expect(result.description).toContain("基于规则的改写与重写建议");
+    expect(result.description).toContain("不代表模型二次创作结果");
     expect(result.suggestions).toHaveLength(3);
     expect(result.suggestions.map((suggestion) => suggestion.mode)).toEqual([
       "dialogue-enhancement",

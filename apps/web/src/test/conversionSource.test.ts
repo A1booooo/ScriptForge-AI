@@ -15,7 +15,7 @@ describe("conversionSource", () => {
   });
 
   test("returns a stable source label for known sources", () => {
-    expect(getResultSourceLabel("real_llm")).toBe("real_llm");
-    expect(getResultSourceLabel("mock")).toBe("mock");
+    expect(getResultSourceLabel("real_llm")).toBe("真实 AI 转换");
+    expect(getResultSourceLabel("mock")).toBe("示例数据 / Mock");
   });
 });

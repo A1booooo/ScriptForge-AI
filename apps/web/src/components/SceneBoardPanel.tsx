@@ -32,7 +32,7 @@ export function SceneBoardPanel({ screenplay }: SceneBoardPanelProps) {
       </div>
 
       <div className="bg-[var(--bg-paper-soft)] border border-[var(--line-soft)] rounded-[0.25rem] px-5 py-4 text-xs leading-6 text-[var(--text-muted)] mb-6">
-        仅用于展示生成的草稿。场景板从当前 Mock API 的剧本结果中读取，而编辑中的 YAML 保持在 YAML 合约工作区独立管理。
+        仅用于展示生成的草稿。场景板从当前剧本生成结果中读取，而在合约选项卡编辑中的 YAML 在独立工作区管理。
       </div>
 
       <div className="space-y-2">
