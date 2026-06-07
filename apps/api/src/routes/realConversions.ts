@@ -69,7 +69,8 @@ const realConversionsRoute: FastifyPluginAsync<RealConversionsRouteOptions> =
           return reply.status(mapErrorToStatusCode(error)).send(
             createApiError(
               error.code,
-              mapErrorToMessage(error)
+              mapErrorToMessage(error),
+              error.details
             )
           );
         }

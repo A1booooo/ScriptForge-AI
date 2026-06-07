@@ -52,5 +52,6 @@ export interface ApiErrorResponse {
       | "provider_response_invalid"
       | "schema_validation_failed";
     message: string;
+    details?: string[];
   };
 }

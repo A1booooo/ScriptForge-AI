@@ -12,6 +12,7 @@ export type LlmErrorCode =
 export class LlmClientError extends Error {
   readonly code: LlmErrorCode;
   readonly status: number | undefined;
+  readonly details: string[] | undefined;
 
   constructor(
     code: LlmErrorCode,
@@ -22,5 +23,6 @@ export class LlmClientError extends Error {
     this.name = "LlmClientError";
     this.code = code;
     this.status = metadata.status;
+    this.details = metadata.details;
   }
 }

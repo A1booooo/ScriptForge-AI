@@ -24,4 +24,5 @@ export interface LlmDraftResult {
 
 export interface LlmErrorMetadata {
   status?: number;
+  details?: string[];
 }
