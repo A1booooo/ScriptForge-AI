@@ -35,6 +35,16 @@ export interface CharacterRelationshipDisplayItem {
   description: string;
 }
 
+export type CharacterRelationshipState =
+  | {
+      kind: "present";
+    }
+  | {
+      kind: "empty";
+      title: string;
+      description: string;
+    };
+
 export interface CharacterAppearanceScene {
   id: string;
   title: string;
@@ -49,6 +59,7 @@ export interface CharacterDisplayItem {
   motivation: string;
   speechStyle: string;
   relationships: CharacterRelationshipDisplayItem[];
+  relationshipState: CharacterRelationshipState;
   appearanceScenes: CharacterAppearanceScene[];
 }
 
@@ -134,25 +145,39 @@ export function getCharacterDisplayItems(
     screenplay.locations.map((location) => [location.id, location])
   );
 
-  return screenplay.characters.map((character) => ({
-    id: character.id,
-    name: character.name,
-    role: character.role,
-    description: character.description,
-    motivation: character.motivation,
-    speechStyle: character.speech_style,
-    relationships: character.relationships.map((relationship) => ({
+  return screenplay.characters.map((character) => {
+    const relationships = character.relationships.map((relationship) => ({
       characterId: relationship.character_id,
       characterName: getCharacterName(charactersById, relationship.character_id),
       relation: relationship.relation,
       description: relationship.description
-    })),
-    appearanceScenes: screenplay.scenes
-      .filter((scene) => scene.characters.includes(character.id))
-      .map((scene) => ({
-        id: scene.id,
-        title: scene.title,
-        locationName: getLocationName(locationsById, scene.location_id)
-      }))
-  }));
+    }));
+
+    return {
+      id: character.id,
+      name: character.name,
+      role: character.role,
+      description: character.description,
+      motivation: character.motivation,
+      speechStyle: character.speech_style,
+      relationships,
+      relationshipState:
+        relationships.length > 0
+          ? {
+              kind: "present"
+            }
+          : {
+              kind: "empty",
+              title: "暂无明确关系",
+              description: "当前剧本草稿未提供该角色的明确关系描述。"
+            },
+      appearanceScenes: screenplay.scenes
+        .filter((scene) => scene.characters.includes(character.id))
+        .map((scene) => ({
+          id: scene.id,
+          title: scene.title,
+          locationName: getLocationName(locationsById, scene.location_id)
+        }))
+    };
+  });
 }

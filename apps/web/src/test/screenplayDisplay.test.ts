@@ -47,4 +47,27 @@ describe("screenplayDisplay", () => {
       "scene_watchtower_choice"
     ]);
   });
+
+  test("returns an explicit empty relationship state when a character has no relationships", () => {
+    const screenplayWithoutRelationships = {
+      ...sampleScreenplay,
+      characters: sampleScreenplay.characters.map((character, index) =>
+        index === 0
+          ? {
+              ...character,
+              relationships: []
+            }
+          : character
+      )
+    };
+
+    const result = getCharacterDisplayItems(screenplayWithoutRelationships);
+
+    expect(result[0]?.relationships).toEqual([]);
+    expect(result[0]?.relationshipState).toEqual({
+      kind: "empty",
+      title: "暂无明确关系",
+      description: "当前剧本草稿未提供该角色的明确关系描述。"
+    });
+  });
 });
