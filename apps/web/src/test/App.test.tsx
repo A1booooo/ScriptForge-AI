@@ -391,7 +391,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "加载示例章节" }));
 
     expect(fetch).not.toHaveBeenCalled();
-    expect(screen.getByDisplayValue("第 1 章")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("雨夜之塔")).toBeInTheDocument();
     expect(screen.getAllByLabelText("章节标题").length).toBeGreaterThanOrEqual(3);
   });
 
