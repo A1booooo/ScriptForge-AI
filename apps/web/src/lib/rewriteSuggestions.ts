@@ -103,11 +103,11 @@ function createPacingAdjustmentSuggestion(
       ? `scene:${mergedScene.id}`
       : "draft:pacing";
   const conflictGapCount = chapterAnalysis.missingConflicts.filter(
-    (item) => item !== "No conflict gaps were flagged by the current deterministic rules."
+    (item) => item !== "当前规则未发现明显的冲突缺口。"
   ).length;
   const opportunityCount = chapterAnalysis.sceneOpportunities.filter(
     (item) =>
-      item !== "No additional scene opportunities were triggered by the current deterministic rules."
+      item !== "当前确定性规则未触发其他场景拓展建议。"
   ).length;
   const tone =
     unreferencedChapter || conflictGapCount > 0 || structureScore < 90
@@ -148,7 +148,7 @@ function createSceneCompressionSuggestion(
   const target = mergedScene ? `scene:${mergedScene.id}` : "draft:scene-compression";
   const sceneOpportunityCount = chapterAnalysis.sceneOpportunities.filter(
     (item) =>
-      item !== "No additional scene opportunities were triggered by the current deterministic rules."
+      item !== "当前确定性规则未触发其他场景拓展建议。"
   ).length;
   const tone =
     mergedScene && mergedScene.chapter_refs.length > 1

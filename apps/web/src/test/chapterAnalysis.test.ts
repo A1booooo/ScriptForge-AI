@@ -41,7 +41,7 @@ describe("analyzeChapterAdaptation", () => {
     expect(result.sourceTitle).toBe("River Street Mystery");
     expect(result.adaptationMode).toBe("dramatic");
     expect(result.adaptationChoices.join(" ")).toContain("确定性规则分析");
-    expect(result.adaptationChoices.join(" ")).toContain("chapter references");
+    expect(result.adaptationChoices.join(" ")).toContain("章节引用");
     expect(result.coverage).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -58,7 +58,7 @@ describe("analyzeChapterAdaptation", () => {
         })
       ])
     );
-    expect(result.sceneOpportunities.join(" ")).toContain("merge");
+    expect(result.sceneOpportunities.join(" ")).toContain("章节引用");
   });
 
   test("uses conservative coverage and conflict warnings when no explicit chapter reference is found", () => {
@@ -117,12 +117,12 @@ describe("analyzeChapterAdaptation", () => {
         expect.objectContaining({
           chapterId: "chapter_02",
           status: "unreferenced",
-          summary: expect.stringContaining("No explicit chapter reference found")
+          summary: expect.stringContaining("未在生成剧本的场景章节引用 chapter_refs")
         })
       ])
     );
     expect(result.missingConflicts.join(" ")).toContain("chapter_02");
-    expect(result.missingConflicts.join(" ")).toContain("conflict keywords");
+    expect(result.missingConflicts.join(" ")).toContain("冲突关键字");
     expect(result.sceneOpportunities.join(" ")).toContain("chapter_02");
   });
 });
