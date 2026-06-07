@@ -1,89 +1,105 @@
 # ScriptForge AI
 
-ScriptForge AI（剧本工坊）是一个面向小说作者的结构化改编 Demo 项目。当前仓库已经打通一条可运行、可验证的真实主链路：输入至少 3 章小说内容，调用真实 LLM conversion，后端把模型输出收敛为 `ScreenplayDocument`，再在前端结果工作台中展示 YAML、校验结果和若干 deterministic analysis 面板。
+ScriptForge AI（剧本工坊）是一个 AI 小说转结构化剧本工具：输入至少 3 章小说内容，调用真实 LLM 生成剧本草稿，再把结果收敛为可编辑、可校验、可导出的 YAML 剧本初稿。
 
-## 项目定位
+## Demo 视频
 
-- 提供一个从小说章节输入到结构化 screenplay draft 展示的工作台。
-- 用 `ScreenplayDocument`、YAML 和 shared validation runtime 把结果变成可检查、可编辑、可导出的结构化对象。
-- 用 deterministic panels 展示章节覆盖、质量信号和改写建议等说明型能力。
+- 视频链接：[Bilibili Demo](https://www.bilibili.com/video/BV1CVEh6zE5c/)
+- 当前 Demo 使用真实 LLM 主链路。
+- 视频中的等待过程已做剪辑；实际生成耗时取决于输入长度、模型响应速度和网络环境。
 
-## 当前真实能力
+## 当前主链路
 
-### 1. 真实 LLM conversion 主链路
+### 1. 输入与提交
 
 - `apps/web` 提供项目标题、改编模式和至少 3 个章节输入。
-- 用户主流程调用 `POST /api/conversions/real`。
-- `apps/api` 复用现有 `apps/api/src/llm/*` client boundary 发起真实 LLM 请求。
-- 后端会对 LLM 输出执行：
-  - 提取 JSON object
-  - `JSON.parse`
-  - shared schema validation
-  - shared consistency checks
-- 校验通过后才返回 `screenplay: ScreenplayDocument`。
+- `加载示例章节` 只会填充示例输入，不会请求接口，也不会直接生成结果。
+- 用户主流程提交到 `POST /api/conversions/real`。
 
-### 2. 示例章节加载
+### 2. 后端真实转换链路
 
-- 页面提供 `加载示例章节`。
-- 该入口只会填入原创中文示例章节输入。
-- 它不会请求 `/api/conversions/mock`。
-- 它不会请求 `/api/conversions/real`。
-- 它不会直接进入结果工作台。
+- API 调用真实 LLM。
+- LLM 返回文本形式的 JSON draft。
+- 后端从文本中提取第一个 JSON object。
+- 后端执行 `JSON.parse`。
+- 后端把 `metadata.title` 规范化为当前提交标题。
+- 后端执行 shared schema validation。
+- 后端执行 consistency checks。
+- 全部通过后，才返回 `ScreenplayDocument`。
 
-### 3. 动态章节输入
+### 3. repair 边界
 
-- 默认显示 3 个章节输入卡片。
-- 支持 `添加章节`。
-- 超过 3 章后，额外章节支持删除。
-- 章节总数不会低于 3。
-- 提交时会发送当前全部 `chapters[]`。
+- 仅在 `JSON.parse` 已成功，但 schema validation 或 consistency checks 失败时，才触发一次 repair。
+- repair 成功后仍要重新经过标题规范化、schema validation 和 consistency checks。
+- 以下情况不会进入 repair：
+  - malformed JSON
+  - missing API key
+  - timeout
+  - rate limited
+  - provider response invalid
 
-### 4. 结果工作台
+### 4. 前端结果工作台
 
-真实 conversion 成功后，前端会展示：
+真实转换成功后，前端结果工作台分为四个区域：
 
-- `ConversionResultSummary`
-- `Chapter Analyzer`
-- `Generated YAML`
-- `Edited YAML`
-- `Validation Result`
-- `Adaptation Quality Score`
-- `Rewrite Suggestions`
-- `Preview Checks`
-- `Scene Board`
-- `Character Bible`
+- `结果概览`
+  - `ConversionResultSummary`
+  - `Adaptation Quality Score`
+- `结构分析`
+  - `Chapter Analyzer`
+  - `Rewrite Suggestions`
+- `YAML 合约`
+  - `Generated YAML`
+  - `Edited YAML`
+  - `Validation Result`
+  - 轻量结构检查
+- `草稿视图`
+  - `Scene Board`
+  - `Character Bible`
 
-### 5. YAML Workspace / Validation / Export
+## YAML 工作流
 
-- `Generated YAML` 根据 `result.screenplay` 序列化得到，只读展示。
-- `Edited YAML` 是本地可编辑副本。
+- `Generated YAML` 来自 `result.screenplay` 的只读序列化结果。
+- `Edited YAML` 是本地可编辑工作副本。
 - shared runtime 会对 `Edited YAML` 执行 parse、schema validation 和 consistency checks。
 - 只有当前 `Edited YAML` 校验通过时，`Export YAML` 才可用。
 
-### 6. shared contract 与 validator runtime
+## 技术亮点
 
-`packages/shared` 当前提供：
+- Monorepo 结构：`apps/web` + `apps/api` + `packages/shared`
+- 真实 LLM conversion 主链路
+- `ScreenplayDocument` 结构化剧本契约
+- YAML 合约工作流
+- shared schema validation
+- shared consistency checks
+- 单次 repair
+- YAML 编辑、校验与导出
+- 结果区 deterministic 分析与建议层
 
-- `ScreenplayDocument`、`AdaptationMode` 等 TypeScript 类型
-- JSON Schema 常量
-- shared sample screenplay
-- YAML parser
-- schema validator
-- consistency checks
-- `validateScreenplayYaml()`
+## 真实链路与边界
 
-Schema 设计细节请见 [docs/schema.md](./docs/schema.md)。
+### 真实 LLM 与 mock 边界
 
-## 真实链路与 mock / deterministic 边界
+- `POST /api/conversions/real` 是用户主流程使用的真实入口。
+- `POST /api/conversions/mock` 仍保留为开发 / 测试用途，不是当前最终演示主流程。
+- mock response 仍基于 shared `sampleScreenplay` contract。
 
-- `POST /api/conversions/real` 是用户主流程使用的真实 LLM conversion 入口。
-- `POST /api/conversions/mock` 仍保留为开发 / 测试用途，不再作为用户主流程。
-- mock response 仍基于 shared sample screenplay contract。
-- `Chapter Analyzer`、`Adaptation Quality Score`、`Rewrite Suggestions` 仍是 deterministic analysis，不是真实 LLM reasoning。
-- `Edited YAML` 只用于 validation / export，不实时驱动 `Scene Board`、`Character Bible`、`Chapter Analyzer`、`Adaptation Quality Score` 或 `Rewrite Suggestions`。
-- `Preview Checks` 是基于 generated draft 的轻量检查，不等同于 shared validator runtime。
+### deterministic 展示层边界
 
-## 本地启动
+- `Chapter Analyzer`、`Adaptation Quality Score`、`Rewrite Suggestions` 是 deterministic frontend pipeline，不是真实 LLM 二次推理。
+- 它们基于 generated draft、submitted source snapshot 和 validation signal 计算，不会发起新的真实 LLM 请求。
+
+### Edited YAML 边界
+
+- `Edited YAML` 只用于 validation / export。
+- 它不会实时反向驱动 `Scene Board`、`Character Bible`、`Chapter Analyzer`、`Adaptation Quality Score` 或 `Rewrite Suggestions`。
+
+### 轻量结构检查边界
+
+- 轻量结构检查基于 generated draft 做快速展示检查。
+- 它不等同于 `Validation Result` 所使用的 shared validator runtime。
+
+## 本地运行
 
 ### 1. 安装依赖
 
@@ -91,17 +107,13 @@ Schema 设计细节请见 [docs/schema.md](./docs/schema.md)。
 corepack.cmd pnpm install
 ```
 
-### 2. 配置环境变量
-
-本地开发时，需要配置 API 的环境变量。请复制模版文件：
+### 2. 配置 API `.env`
 
 ```powershell
 Copy-Item apps/api/.env.example apps/api/.env
 ```
 
-（在 Linux/macOS 下请使用 `cp apps/api/.env.example apps/api/.env`）
-
-然后打开 `apps/api/.env` 并填写你自己的 `LLM_API_KEY`。默认参数模板如下：
+然后打开 `apps/api/.env` 并填写你自己的 `LLM_API_KEY`。默认模板如下：
 
 ```env
 LLM_PROVIDER=openai_compatible
@@ -112,7 +124,7 @@ LLM_TIMEOUT_MS=120000
 ```
 
 > [!WARNING]
-> 请勿将包含真实 API Key 的 `.env` 文件提交到 GitHub。该文件已被列入 `.gitignore` 中。
+> 请不要将包含真实 API Key 的 `.env` 文件提交到仓库。
 
 ### 3. 启动 API
 
@@ -126,12 +138,13 @@ corepack.cmd pnpm --filter @scriptforge/api dev
 corepack.cmd pnpm --filter @scriptforge/web dev
 ```
 
-### 5. 默认地址与代理
+### 5. 默认地址
 
 - API: `http://127.0.0.1:3001`
 - Web: `http://127.0.0.1:5173`
 
 补充说明：
+
 - `apps/web` 在 Vite 开发环境下会把 `/api/*` 代理到 `http://127.0.0.1:3001`。
 - 本地联调时应先启动 API，再启动 Web。
 
@@ -144,18 +157,11 @@ corepack.cmd pnpm run build
 corepack.cmd pnpm run verify
 ```
 
-当前覆盖：
-
-- `@scriptforge/shared` typecheck / test
-- `@scriptforge/api` typecheck / test
-- `@scriptforge/web` typecheck / test
-- `@scriptforge/web` build
-
 ## Workspace 结构
 
 ### `packages/shared`
 
-负责共享 contract 和 validation runtime：
+负责共享 contract 与 validation runtime：
 
 - `src/screenplayTypes.ts`
 - `src/screenplaySchema.ts`
@@ -179,17 +185,18 @@ corepack.cmd pnpm run verify
 - `加载示例章节`
 - 真实 LLM 提交
 - 结果工作台
-- YAML Workspace / Validation Result / Export YAML
-- deterministic analysis panels
+- YAML 编辑 / 结构校验 / 导出
+- deterministic 分析展示面板
 
 ## 当前未实现能力
 
-- 历史记录
 - 登录 / 用户系统
+- 历史记录
 - 数据库存储
 - Docker
-- 真实 LLM rewrite 输出或自动改写应用
 - streaming response
+- 真实 LLM rewrite 输出
+- 自动应用 rewrite suggestions
 
 ## 相关文档
 
