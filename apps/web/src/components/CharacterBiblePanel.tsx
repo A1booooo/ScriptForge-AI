@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Users } from "lucide-react";
 import type { ScreenplayDocument } from "@scriptforge/shared";
 
 import { getCharacterDisplayItems } from "../lib/screenplayDisplay";
@@ -15,32 +16,31 @@ export function CharacterBiblePanel({ screenplay }: CharacterBiblePanelProps) {
   );
 
   return (
-    <section className="panel-enter overflow-hidden border border-zinc-800 bg-zinc-950/80 shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
-      <div className="border-b border-zinc-800 px-5 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="space-y-1">
-            <p className="text-xs tracking-[0.22em] text-zinc-500 uppercase">
-              Character Bible
-            </p>
-            <h3 className="text-sm font-semibold text-zinc-100">
-              Character profiles and scene appearances from the shared draft
-            </h3>
-          </div>
-          <p className="text-xs tracking-[0.18em] text-zinc-500 uppercase">
-            {characters.length} characters
+    <div className="bg-[var(--bg-paper)] border border-[var(--line-soft)] rounded-[0.25rem] p-6 shadow-[var(--shadow-soft)]">
+      <div className="border-b border-[var(--line-soft)] pb-4 mb-4 flex justify-between items-center">
+        <div className="space-y-1">
+          <p className="section-kicker flex items-center gap-1.5">
+            <Users className="w-4 h-4 text-[var(--color-primary)]" />
+            角色档案
           </p>
+          <h3 className="text-base font-bold text-[var(--text-strong)]">
+            角色档案作为辅助草稿栏
+          </h3>
         </div>
+        <span className="text-xs bg-[var(--bg-paper-soft)] px-2.5 py-1 rounded text-[var(--text-muted)] border border-[var(--line-soft)] uppercase tracking-wider font-semibold">
+          共 {characters.length} 个角色
+        </span>
       </div>
 
-      <div className="border-b border-zinc-900 bg-black/20 px-5 py-3 text-sm leading-6 text-zinc-400">
-        Generated draft view only. The Character Bible stays within current schema fields from the generated result, while edited YAML powers the validation and export loop.
+      <div className="bg-[var(--bg-paper-soft)] border border-[var(--line-soft)] rounded-[0.25rem] px-4 py-3 text-xs leading-5 text-[var(--text-muted)] mb-6">
+        角色概况及场次出场情况作为主要场景板阅读流的辅助参考。
       </div>
 
-      <div className="space-y-4 px-5 py-5">
+      <div className="space-y-6">
         {characters.map((character) => (
           <CharacterBibleCard key={character.id} character={character} />
         ))}
       </div>
-    </section>
+    </div>
   );
 }

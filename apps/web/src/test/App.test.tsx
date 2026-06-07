@@ -7,6 +7,15 @@ import App from "../App";
 import { DEMO_SAMPLE_BADGE_LABEL } from "../lib/demoFixtures";
 import { screenplayToYaml } from "../lib/screenplayToYaml";
 
+if (typeof window !== "undefined" && !window.ResizeObserver) {
+  window.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
+
 const successResponse = {
   conversion_id: "conv_mock_001",
   status: "completed",
@@ -181,52 +190,53 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
 
-    expect(await screen.findByText("YAML Workspace")).toBeInTheDocument();
+    // 1. Overview tab (Default)
+    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(screen.getAllByText("就绪度 / 质量评分").length).toBeGreaterThan(0);
+    expect(screen.getByText("确定性 Demo 评分")).toBeInTheDocument();
+    expect(screen.getByText("结构就绪度")).toBeInTheDocument();
+    expect(screen.getByText("角色覆盖度")).toBeInTheDocument();
+    expect(screen.getByText("冲突清晰度")).toBeInTheDocument();
+    expect(screen.getByText("Schema 完整度")).toBeInTheDocument();
+    expect(screen.getByText("conv_mock_001")).toBeInTheDocument();
+    expect(screen.getByText("River Street Mystery Draft")).toBeInTheDocument();
+
+    // 2. Switch to Analysis tab
+    fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
     expect(screen.getByText("Chapter Analyzer")).toBeInTheDocument();
     expect(screen.getByText("Demo analysis")).toBeInTheDocument();
-    expect(screen.getByText("Generated YAML")).toBeInTheDocument();
-    expect(screen.getByLabelText("Edited YAML")).toBeInTheDocument();
-    expect(screen.getByText("Validation Result")).toBeInTheDocument();
-    expect(screen.getByText("Adaptation Quality Score")).toBeInTheDocument();
-    expect(screen.getByText("Deterministic Demo score")).toBeInTheDocument();
-    expect(
-      screen.getByText(/not a real LLM quality judgment/i)
-    ).toBeInTheDocument();
-    expect(screen.getByText("Rewrite Suggestions")).toBeInTheDocument();
-    expect(
-      screen.getByText("Deterministic Demo suggestions")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/not a real LLM rewrite/i)
-    ).toBeInTheDocument();
-    expect(screen.getAllByText("Mode").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Target").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Reason").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Signal source").length).toBeGreaterThan(0);
+    expect(screen.getByText("修改建议")).toBeInTheDocument();
+    expect(screen.getByText("确定性 Demo 建议")).toBeInTheDocument();
+    expect(screen.getAllByText("建议类型").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("作用对象").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("建议原因").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("信号来源").length).toBeGreaterThan(0);
     expect(screen.getByText("dialogue-enhancement")).toBeInTheDocument();
     expect(screen.getByText("pacing-adjustment")).toBeInTheDocument();
     expect(screen.getByText("scene-compression")).toBeInTheDocument();
-    expect(screen.getByText("Structure")).toBeInTheDocument();
-    expect(screen.getByText("Character Coverage")).toBeInTheDocument();
-    expect(screen.getByText("Conflict Clarity")).toBeInTheDocument();
-    expect(screen.getByText("Schema Completeness")).toBeInTheDocument();
-    expect(screen.getAllByText("Signal source").length).toBeGreaterThan(0);
-    expect(screen.getByText("conv_mock_001")).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument();
-    expect(screen.getByText("River Street Mystery Draft")).toBeInTheDocument();
-    expect(screen.getByText("Preview Checks")).toBeInTheDocument();
-    expect(screen.getByText("Scene Board")).toBeInTheDocument();
-    expect(screen.getByText("Character Bible")).toBeInTheDocument();
+
+    // 3. Switch to Contract tab
+    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
+    expect(screen.getByText("YAML 合约工作区")).toBeInTheDocument();
+    expect(screen.getByText("生成基线")).toBeInTheDocument();
+    expect(screen.getByLabelText("Edited YAML")).toBeInTheDocument();
+    expect(screen.getByText("校验结果")).toBeInTheDocument();
+    expect(screen.getByText("预览检查")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "预览检查仍为轻量级面板。共享校验器运行时尚未接入此 UI。"
+      )
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/schema_version/).length).toBeGreaterThan(0);
+
+    // 4. Switch to Draft View tab
+    fireEvent.click(screen.getByRole("button", { name: "Draft View" }));
+    expect(screen.getByText("场景板")).toBeInTheDocument();
+    expect(screen.getByText("角色档案")).toBeInTheDocument();
     expect(
       screen.getAllByText("Rumors Under Lantern Light").length
     ).toBeGreaterThan(0);
     expect(screen.getAllByText("Lin Xia").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/schema_version/).length).toBeGreaterThan(0);
-    expect(
-      screen.getByText(
-        "Preview Checks remains a lightweight panel. The shared validator runtime is not wired into this UI yet."
-      )
-    ).toBeInTheDocument();
   });
 
   test("updates schema completeness when the current validation state becomes invalid", async () => {
@@ -242,42 +252,62 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /mock/i }));
 
-    const editor = await screen.findByLabelText("Edited YAML");
+    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(screen.getByText("Schema 完整度")).toBeInTheDocument();
+    expect(screen.getByText("校验当前已通过，没有解析、Schema 或一致性问题。")).toBeInTheDocument();
 
-    expect(screen.getByText("Schema Completeness")).toBeInTheDocument();
-    expect(screen.getByText("Validation currently passes without parse, schema, or consistency issues.")).toBeInTheDocument();
+    // Switch to Contract tab to edit YAML
+    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
+    const editor = screen.getByLabelText("Edited YAML");
 
     fireEvent.change(editor, {
       target: { value: "metadata:\n  title: [broken" }
     });
 
-    expect(await screen.findByText(/yaml_parse_error/i)).toBeInTheDocument();
+    expect(await screen.findByText(/yaml_parse_error/i, {}, { timeout: 3000 })).toBeInTheDocument();
+
+    // Switch back to Overview to verify quality score dimension updates
+    fireEvent.click(screen.getByRole("button", { name: "Overview" }));
     expect(
-      screen.getByText(/current validation state reports 1 issue/i)
+      screen.getByText(/当前校验状态报告了 1 个问题/)
     ).toBeInTheDocument();
   });
 
   test("keeps chapter analyzer bound to the submitted source snapshot instead of live form edits", async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      new Response(JSON.stringify(successResponse), {
-        status: 200,
-        headers: { "Content-Type": "application/json" }
-      })
+    vi.mocked(fetch).mockImplementation(() =>
+      Promise.resolve(
+        new Response(JSON.stringify(successResponse), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        })
+      )
     );
 
     render(<App />);
     fillMinimumValidForm();
 
-    fireEvent.click(screen.getByRole("button", { name: /mock/i }));
+    fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
 
-    expect(await screen.findByText("Chapter Analyzer")).toBeInTheDocument();
+    // Switch to Analysis tab
+    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
+    expect(screen.getByText("Chapter Analyzer")).toBeInTheDocument();
     expect(screen.getByText("River Street Mystery")).toBeInTheDocument();
+
+    // Go back to input view to change fields
+    fireEvent.click(screen.getByRole("button", { name: "← 返回修改章节" }));
 
     fireEvent.change(screen.getByLabelText("项目标题"), {
       target: { value: "Changed After Submit" }
     });
 
     expect(screen.getByDisplayValue("Changed After Submit")).toBeInTheDocument();
+
+    // Switch back to results using the "查看生成结果" button
+    fireEvent.click(screen.getByRole("button", { name: "查看生成结果" }));
+    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
+
     expect(screen.getByText("River Street Mystery")).toBeInTheDocument();
     expect(screen.queryByText("Changed After Submit")).not.toBeInTheDocument();
   });
@@ -318,7 +348,10 @@ describe("App", () => {
 
     fireEvent.click(submitButton);
 
-    const editor = await screen.findByLabelText("Edited YAML");
+    // Switch to Contract tab to edit
+    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
+    const editor = screen.getByLabelText("Edited YAML");
     fireEvent.change(editor, {
       target: {
         value: "schema_version: '1.0.0'\nmetadata:\n  title: Changed Locally"
@@ -327,9 +360,16 @@ describe("App", () => {
 
     expect(screen.getByDisplayValue(/Changed Locally/)).toBeInTheDocument();
 
-    fireEvent.click(submitButton);
+    // Go back to input to resubmit
+    fireEvent.click(screen.getByRole("button", { name: "← 返回修改章节" }));
+    
+    // Query the newly mounted submit button
+    const submitButton2 = screen.getByRole("button", { name: "生成 mock 剧本摘要" });
+    fireEvent.click(submitButton2);
 
-    await screen.findByText("conv_mock_002");
+    // Switch back to Contract tab
+    expect(await screen.findByText("conv_mock_002", {}, { timeout: 3000 })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
 
     expect(screen.getByLabelText("Edited YAML")).toHaveValue(
       screenplayToYaml(secondResponse.screenplay)
@@ -350,7 +390,9 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
 
-    const editor = await screen.findByLabelText("Edited YAML");
+    // Switch to Contract tab
+    fireEvent.click(await screen.findByRole("button", { name: "Contract" }));
+    const editor = screen.getByLabelText("Edited YAML");
     expect(
       screen.getByRole("button", { name: "Export YAML" })
     ).toBeEnabled();
@@ -406,7 +448,9 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "生成 mock 剧本摘要" }));
 
-    const editor = await screen.findByLabelText("Edited YAML");
+    // Switch to Contract tab
+    fireEvent.click(await screen.findByRole("button", { name: "Contract" }));
+    const editor = screen.getByLabelText("Edited YAML");
     const editedYaml = stringify({
       ...successResponse.screenplay,
       metadata: {
@@ -457,6 +501,9 @@ describe("App", () => {
       )
     ).toBeInTheDocument();
 
+    // Verify entry disclosure is present initially:
+    expect(screen.getAllByText(DEMO_SAMPLE_BADGE_LABEL)).toHaveLength(1);
+
     fireEvent.click(screen.getByRole("button", { name: "Run Demo Sample" }));
 
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
@@ -467,16 +514,28 @@ describe("App", () => {
       })
     );
 
-    expect(await screen.findAllByText(DEMO_SAMPLE_BADGE_LABEL)).toHaveLength(2);
+    // Wait for result view to load (Overview page is default)
+    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
+
+    // Verify result disclosure badge is present:
+    expect(screen.getAllByText(DEMO_SAMPLE_BADGE_LABEL)).toHaveLength(1);
     expect(
       screen.getAllByText(/not real user data and not real llm output/i)
-    ).toHaveLength(2);
+    ).toHaveLength(1);
+
+    // Switch to Analysis tab
+    fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
     expect(screen.getByText("Chapter Analyzer")).toBeInTheDocument();
-    expect(screen.getByText("Adaptation Quality Score")).toBeInTheDocument();
-    expect(screen.getByText("Rewrite Suggestions")).toBeInTheDocument();
-    expect(screen.getByText("YAML Workspace")).toBeInTheDocument();
-    expect(screen.getByText("Validation Result")).toBeInTheDocument();
-    expect(screen.getByText("Scene Board")).toBeInTheDocument();
-    expect(screen.getByText("Character Bible")).toBeInTheDocument();
+    expect(screen.getByText("修改建议")).toBeInTheDocument();
+
+    // Switch to Contract tab
+    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
+    expect(screen.getByText("YAML 合约工作区")).toBeInTheDocument();
+    expect(screen.getByText("校验结果")).toBeInTheDocument();
+
+    // Switch to Draft View tab
+    fireEvent.click(screen.getByRole("button", { name: "Draft View" }));
+    expect(screen.getByText("场景板")).toBeInTheDocument();
+    expect(screen.getByText("角色档案")).toBeInTheDocument();
   });
 });
