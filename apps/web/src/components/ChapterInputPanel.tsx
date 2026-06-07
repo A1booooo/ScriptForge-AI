@@ -38,7 +38,7 @@ export function ChapterInputPanel({
             章节输入
           </p>
           <p className="text-sm text-[var(--text-muted)]">
-            Provide chapter details and content. Long chapters will scroll internally to protect screen space.
+            提供章节的详细信息和内容。长章节将在内部滚动以节省屏幕空间。
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ export function ChapterInputPanel({
                   <textarea
                     aria-label="章节内容"
                     className="input-control"
-                    placeholder="输入章节正文，用于 mock 剧本转换。"
+                    placeholder="输入章节正文，用于剧本转换。"
                     value={chapter.content}
                     onChange={(event) =>
                       handleChange(event, index, "content", onChapterChange)

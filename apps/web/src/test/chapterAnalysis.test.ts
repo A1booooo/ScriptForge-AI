@@ -31,16 +31,16 @@ function createSubmittedSourceSnapshot(): SubmittedSourceSnapshot {
 }
 
 describe("analyzeChapterAdaptation", () => {
-  test("summarizes deterministic demo analysis using submitted source snapshot and explicit screenplay references", () => {
+  test("summarizes deterministic rules analysis using submitted source snapshot and explicit screenplay references", () => {
     const result = analyzeChapterAdaptation({
       sourceSnapshot: createSubmittedSourceSnapshot(),
       screenplay: sampleScreenplay
     });
 
-    expect(result.isDemoAnalysis).toBe(true);
+    expect(result.isDeterministicAnalysis).toBe(true);
     expect(result.sourceTitle).toBe("River Street Mystery");
     expect(result.adaptationMode).toBe("dramatic");
-    expect(result.adaptationChoices.join(" ")).toContain("deterministic Demo analysis");
+    expect(result.adaptationChoices.join(" ")).toContain("确定性规则分析");
     expect(result.adaptationChoices.join(" ")).toContain("chapter references");
     expect(result.coverage).toEqual(
       expect.arrayContaining([

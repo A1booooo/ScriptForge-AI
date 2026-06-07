@@ -172,10 +172,10 @@ export function getRewriteSuggestions({
   adaptationQualityScore
 }: GetRewriteSuggestionsInput): RewriteSuggestionsResult {
   return {
-    title: "Rewrite Suggestions",
-    badgeLabel: "Deterministic Demo suggestions",
+    title: "规则建议",
+    badgeLabel: "结构规则建议",
     description:
-      "Rule-based improvement suggestions only. This is not a real LLM rewrite, is not auto-applied, and does not modify YAML.",
+      "基于规则的改写与重写建议。从生成的剧本结构、章节分析器信号以及改编质量评分维度中提取，不代表模型二次创作结果。",
     suggestions: [
       createDialogueEnhancementSuggestion(screenplay, adaptationQualityScore),
       createPacingAdjustmentSuggestion(

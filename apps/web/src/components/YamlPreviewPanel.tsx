@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { Group, Panel, Separator } from "react-resizable-panels";
-import { FileCode, Settings, Download } from "lucide-react";
+import { useState } from "react";
+import { FileCode, Settings, Download, Copy, RotateCcw } from "lucide-react";
+import type { YamlValidationStatus } from "../lib/yamlValidationStatus";
 
 interface YamlPreviewPanelProps {
   generatedYaml: string;
@@ -8,6 +8,7 @@ interface YamlPreviewPanelProps {
   canExport: boolean;
   onEditedYamlChange: (value: string) => void;
   onExport: () => void;
+  validationStatus: YamlValidationStatus;
 }
 
 export function YamlPreviewPanel({
@@ -15,18 +16,36 @@ export function YamlPreviewPanel({
   editedYaml,
   canExport,
   onEditedYamlChange,
-  onExport
+  onExport,
+  validationStatus
 }: YamlPreviewPanelProps) {
-  const [direction, setDirection] = useState<"horizontal" | "vertical">("horizontal");
+  const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    function handleResize() {
-      setDirection(window.innerWidth < 1024 ? "vertical" : "horizontal");
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(editedYaml);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
     }
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  };
+
+  const handleReset = () => {
+    const confirmReset = window.confirm("此操作将覆盖您当前编辑的全部内容，确定继续吗？");
+    if (confirmReset) {
+      onEditedYamlChange(generatedYaml);
+    }
+  };
+
+  const statusColors = {
+    valid: "border-b border-[rgba(61,139,109,0.32)] bg-[rgba(61,139,109,0.06)] text-[#2d7257]",
+    yaml_syntax_error: "border-b border-[rgba(196,82,82,0.28)] bg-[rgba(196,82,82,0.06)] text-[#8e4343]",
+    schema_error: "border-b border-[rgba(216,155,43,0.32)] bg-[rgba(216,155,43,0.06)] text-[#996a14]",
+    consistency_error: "border-b border-[rgba(216,155,43,0.32)] bg-[rgba(216,155,43,0.06)] text-[#996a14]",
+    unknown_error: "border-b border-[rgba(216,155,43,0.32)] bg-[rgba(216,155,43,0.06)] text-[#996a14]"
+  };
+  const statusColorClass = statusColors[validationStatus.statusKind] || statusColors.unknown_error;
 
   return (
     <div className="bg-[var(--bg-paper)] border border-[var(--line-soft)] rounded-[0.25rem] overflow-hidden shadow-[var(--shadow-soft)]">
@@ -51,7 +70,7 @@ export function YamlPreviewPanel({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-center text-xs">
           <div className="rounded border border-[var(--line-soft)] bg-[var(--bg-paper-soft)] p-3">
             <span className="block font-bold text-[var(--text-strong)]">可编辑</span>
-            <span className="text-[11px] text-[var(--text-muted)] mt-1 block">左侧基线参考，右侧自由修改</span>
+            <span className="text-[11px] text-[var(--text-muted)] mt-1 block">上方折叠基线参考，下方自由修改</span>
           </div>
           <div className="rounded border border-[var(--line-soft)] bg-[var(--bg-paper-soft)] p-3">
             <span className="block font-bold text-[var(--text-strong)]">可校验</span>
@@ -71,64 +90,74 @@ export function YamlPreviewPanel({
         </p>
       </div>
 
-      <Group orientation={direction} className="min-h-[38rem]">
-        {/* Left/Top Panel: Generated YAML */}
-        <Panel defaultSize={50} minSize={25}>
-          <div className="flex flex-col h-full bg-[#faf7f1]">
-            <div className="border-b border-[var(--line-soft)] bg-[rgba(238,230,218,0.45)] px-6 py-4">
-              <p className="section-kicker">生成基线</p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">
-                AI 模型最近一次生成的结果（只读 baseline）。
-              </p>
-            </div>
-            <pre className="flex-grow overflow-auto bg-[#33302C] text-[#F7F0E9] p-6 font-mono text-sm leading-6">
-              <code>{generatedYaml}</code>
-            </pre>
+      {/* Collapsible reference area for Generated YAML */}
+      <details className="group border-b border-[var(--line-soft)] bg-[#faf7f1] overflow-hidden">
+        <summary className="px-6 py-3 text-xs font-semibold text-[var(--text-muted)] cursor-pointer hover:text-[var(--text-strong)] transition-colors select-none flex items-center justify-between">
+          <span>展开/收起 AI 生成基线参考 (只读)</span>
+          <span className="text-[10px] bg-[rgba(238,230,218,0.45)] px-2 py-0.5 rounded font-mono font-normal">只读参考</span>
+        </summary>
+        <div className="border-t border-[var(--line-soft)] max-h-60 overflow-auto bg-[#33302C] text-[#F7F0E9] p-6 font-mono text-sm leading-6">
+          <code>{generatedYaml}</code>
+        </div>
+      </details>
+
+      {/* Edited YAML Workspace */}
+      <div className="flex flex-col min-h-[32rem] bg-[#fffdfa]">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--line-soft)] bg-[rgba(255,255,255,0.7)] px-6 py-4">
+          <div>
+            <p className="section-kicker">当前可编辑 YAML</p>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
+              用于校验和导出的工作草稿副本。
+            </p>
           </div>
-        </Panel>
-
-        <Separator className="PanelResizeHandle" />
-
-        {/* Right/Bottom Panel: Edited YAML */}
-        <Panel defaultSize={50} minSize={25}>
-          <div className="flex flex-col h-full bg-[#fffdfa] border-t lg:border-t-0 lg:border-l border-[var(--line-soft)]">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--line-soft)] bg-[rgba(255,255,255,0.7)] px-6 py-4">
-              <div>
-                <p className="section-kicker">编辑中的 YAML</p>
-                <p className="mt-1 text-xs text-[var(--text-muted)]">
-                  用于校验和导出的工作草稿副本。
-                </p>
-              </div>
-              <button
-                className="cta-button cta-primary inline-flex items-center gap-1.5 rounded-[4px] px-4 py-2 text-xs"
-                disabled={!canExport}
-                aria-label="Export YAML"
-                type="button"
-                onClick={onExport}
-              >
-                <Download className="w-3.5 h-3.5" />
-                导出 YAML
-              </button>
-            </div>
-
-            <div className="border-b border-[var(--line-soft)] bg-[rgba(238,230,218,0.35)] px-6 py-3 text-xs leading-5 text-[var(--text-muted)]">
-              校验通过（即校验结果无错误和阻断）时才允许导出。
-            </div>
-
-            <label className="sr-only" htmlFor="edited-yaml">
-              Edited YAML
-            </label>
-            <textarea
-              id="edited-yaml"
-              aria-label="Edited YAML"
-              className="flex-grow w-full resize-none bg-[#33302C] text-[#F7F0E9] p-6 font-mono text-sm leading-6 outline-none"
-              spellCheck={false}
-              value={editedYaml}
-              onChange={(event) => onEditedYamlChange(event.target.value)}
-            />
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              className="cta-button cta-secondary inline-flex items-center gap-1.5 rounded-[4px] px-3 py-2 text-xs"
+              title="会覆盖当前编辑内容"
+              type="button"
+              onClick={handleReset}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              恢复为生成版本
+            </button>
+            <button
+              className="cta-button cta-secondary inline-flex items-center gap-1.5 rounded-[4px] px-3 py-2 text-xs"
+              type="button"
+              onClick={handleCopy}
+            >
+              <Copy className="w-3.5 h-3.5" />
+              {copied ? "已复制！" : "复制 YAML"}
+            </button>
+            <button
+              className="cta-button cta-primary inline-flex items-center gap-1.5 rounded-[4px] px-4 py-2 text-xs"
+              disabled={!canExport}
+              aria-label="导出 YAML"
+              type="button"
+              onClick={onExport}
+            >
+              <Download className="w-3.5 h-3.5" />
+              导出 YAML
+            </button>
           </div>
-        </Panel>
-      </Group>
+        </div>
+
+        {/* Live validation status bar */}
+        <div className={`px-6 py-3 text-xs font-semibold flex items-center gap-1.5 ${statusColorClass}`}>
+          <span>{validationStatus.shortMessage}</span>
+        </div>
+
+        <label className="sr-only" htmlFor="edited-yaml">
+          编辑中的 YAML
+        </label>
+        <textarea
+          id="edited-yaml"
+          aria-label="编辑中的 YAML"
+          className="flex-grow w-full min-h-[26rem] resize-none bg-[#33302C] text-[#F7F0E9] p-6 font-mono text-sm leading-6 outline-none"
+          spellCheck={false}
+          value={editedYaml}
+          onChange={(event) => onEditedYamlChange(event.target.value)}
+        />
+      </div>
     </div>
   );
 }

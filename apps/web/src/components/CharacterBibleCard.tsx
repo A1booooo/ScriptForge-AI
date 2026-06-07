@@ -52,12 +52,12 @@ export function CharacterBibleCard({ character }: CharacterBibleCardProps) {
         </div>
 
         {/* Relationships list */}
-        {character.relationships.length > 0 && (
-          <div>
-            <span className="font-semibold text-[var(--text-strong)] flex items-center gap-1">
-              <ShieldAlert className="w-3.5 h-3.5" />
-              角色关系
-            </span>
+        <div>
+          <span className="font-semibold text-[var(--text-strong)] flex items-center gap-1">
+            <ShieldAlert className="w-3.5 h-3.5" />
+            角色关系
+          </span>
+          {character.relationshipState.kind === "present" ? (
             <ul className="mt-1 space-y-1.5">
               {character.relationships.map((relationship) => (
                 <li
@@ -74,8 +74,13 @@ export function CharacterBibleCard({ character }: CharacterBibleCardProps) {
                 </li>
               ))}
             </ul>
-          </div>
-        )}
+          ) : (
+            <div className="mt-1 p-2.5 rounded bg-[var(--bg-paper-soft)] border border-dashed border-[var(--line-soft)] text-xs text-[var(--text-muted)] space-y-0.5">
+              <p className="font-semibold text-[var(--text-strong)]">{character.relationshipState.title}</p>
+              <p>{character.relationshipState.description}</p>
+            </div>
+          )}
+        </div>
 
         {/* Scene Appearances */}
         {character.appearanceScenes.length > 0 && (

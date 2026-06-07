@@ -60,10 +60,10 @@ describe("getAdaptationQualityScore", () => {
       validationResult: createPassingValidationResult()
     });
 
-    expect(result.isDeterministicDemoScore).toBe(true);
-    expect(result.overall.label).toContain("Readiness");
-    expect(result.overall.reason).toContain("generated draft structure");
-    expect(result.overall.reason).toContain("validation state");
+    expect(result.isDeterministicScore).toBe(true);
+    expect(result.overall.label).toContain("结构就绪度");
+    expect(result.overall.reason).toContain("剧本草稿结构");
+    expect(result.overall.reason).toContain("校验状态");
     expect(result.dimensions).toHaveLength(4);
     expect(result.dimensions.map((dimension) => dimension.id)).toEqual([
       "structure",

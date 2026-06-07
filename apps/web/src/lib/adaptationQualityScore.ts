@@ -26,7 +26,7 @@ export interface AdaptationQualityOverallScore {
 }
 
 export interface AdaptationQualityScoreResult {
-  isDeterministicDemoScore: true;
+  isDeterministicScore: true;
   title: string;
   badgeLabel: string;
   description: string;
@@ -232,16 +232,16 @@ export function getAdaptationQualityScore({
   );
 
   return {
-    isDeterministicDemoScore: true,
-    title: "Adaptation Quality Score",
-    badgeLabel: "Deterministic Demo score",
+    isDeterministicScore: true,
+    title: "结构评分",
+    badgeLabel: "结构就绪度评分",
     description:
-      "Rule-based readiness and quality signal. Derived from generated draft structure, T10 Chapter Analyzer signals, and the current YAML validation state. This is not a real LLM quality judgment.",
+      "基于规则的就绪度和结构信号。从生成的剧本结构、章节分析器信号以及当前的 YAML 校验状态中提取，不代表模型二次创作结果。",
     overall: {
-      label: "Readiness / Quality Score",
+      label: "结构就绪度",
       score: overallScore,
       reason:
-        "This overall score is a deterministic Demo readiness signal based on generated draft structure, T10 Chapter Analyzer signals, and the current YAML validation state."
+        "此总评分是基于生成的剧本草稿结构、章节分析器信号和当前 YAML 校验状态的确定性就绪度评估。"
     },
     dimensions
   };

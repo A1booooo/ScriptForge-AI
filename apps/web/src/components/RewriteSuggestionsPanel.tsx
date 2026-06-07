@@ -102,8 +102,9 @@ function translateReason(mode: string, reason: string): string {
 export function RewriteSuggestionsPanel({
   suggestions
 }: RewriteSuggestionsPanelProps) {
-  const title = suggestions.title === "Rewrite Suggestions" ? "修改建议" : suggestions.title;
-  const badgeLabel = suggestions.badgeLabel === "Deterministic Demo suggestions" ? "确定性 Demo 建议" : suggestions.badgeLabel;
+  const title = suggestions.title ?? "规则建议";
+  const badgeLabel = suggestions.badgeLabel ?? "结构规则建议";
+  const description = suggestions.description ?? "";
 
   return (
     <div className="space-y-6">
@@ -123,7 +124,7 @@ export function RewriteSuggestionsPanel({
       </div>
 
       <div className="bg-[var(--bg-paper-soft)] border border-[var(--line-soft)] rounded-[0.25rem] px-5 py-4 text-xs leading-6 text-[var(--text-muted)]">
-        {suggestions.description}
+        {description}
       </div>
 
       <div className="space-y-6 divide-y divide-[var(--line-soft)]">

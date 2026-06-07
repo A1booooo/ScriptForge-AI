@@ -121,7 +121,7 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    expect(await screen.findByText("Error")).toBeInTheDocument();
+    expect(await screen.findByText("错误")).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -187,17 +187,17 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(await screen.findByText("结构评分", {}, { timeout: 3000 })).toBeInTheDocument();
     expect(screen.getByText("conv_real_001")).toBeInTheDocument();
     expect(screen.getByText("River Street Mystery Draft")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
-    expect(screen.getByText("Chapter Analyzer")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "02 / 结构分析" }));
+    expect(screen.getByText("结构分析")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
-    expect(screen.getByLabelText("Edited YAML")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "03 / YAML 合约" }));
+    expect(screen.getByLabelText("编辑中的 YAML")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Draft View" }));
+    fireEvent.click(screen.getByRole("button", { name: "04 / 草稿视图" }));
     expect(screen.getAllByText("Rumors Under Lantern Light").length).toBeGreaterThan(0);
   });
 
@@ -214,8 +214,8 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
+    expect(await screen.findByText("结构评分", {}, { timeout: 3000 })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "02 / 结构分析" }));
     expect(screen.getByText("River Street Mystery")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "返回修改章节" }));
@@ -225,8 +225,8 @@ describe("App", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "查看生成结果" }));
-    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Analysis" }));
+    expect(await screen.findByText("结构评分", {}, { timeout: 3000 })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "02 / 结构分析" }));
 
     expect(screen.getByText("River Street Mystery")).toBeInTheDocument();
     expect(screen.queryByText("Changed After Submit")).not.toBeInTheDocument();
@@ -264,9 +264,9 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    expect(await screen.findByText("改编质量评分", {}, { timeout: 3000 })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
-    const editor = screen.getByLabelText("Edited YAML");
+    expect(await screen.findByText("结构评分", {}, { timeout: 3000 })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "03 / YAML 合约" }));
+    const editor = screen.getByLabelText("编辑中的 YAML");
     fireEvent.change(editor, {
       target: {
         value: "schema_version: '1.0.0'\nmetadata:\n  title: Changed Locally"
@@ -277,9 +277,9 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
     expect(await screen.findByText("conv_real_002", {}, { timeout: 3000 })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
+    fireEvent.click(screen.getByRole("button", { name: "03 / YAML 合约" }));
 
-    expect(screen.getByLabelText("Edited YAML")).toHaveValue(
+    expect(screen.getByLabelText("编辑中的 YAML")).toHaveValue(
       screenplayToYaml(secondResponse.screenplay)
     );
   });
@@ -297,9 +297,9 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    fireEvent.click(await screen.findByRole("button", { name: "Contract" }));
-    const editor = screen.getByLabelText("Edited YAML");
-    expect(screen.getByRole("button", { name: "Export YAML" })).toBeEnabled();
+    fireEvent.click(await screen.findByRole("button", { name: "03 / YAML 合约" }));
+    const editor = screen.getByLabelText("编辑中的 YAML");
+    expect(screen.getByRole("button", { name: "导出 YAML" })).toBeEnabled();
 
     fireEvent.change(editor, {
       target: { value: "metadata:\n  title: [broken" }
@@ -307,7 +307,7 @@ describe("App", () => {
 
     expect(await screen.findByText(/yaml_parse_error/i)).toBeInTheDocument();
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Export YAML" })).toBeDisabled()
+      expect(screen.getByRole("button", { name: "导出 YAML" })).toBeDisabled()
     );
 
     fireEvent.change(editor, {
@@ -315,7 +315,7 @@ describe("App", () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Export YAML" })).toBeEnabled()
+      expect(screen.getByRole("button", { name: "导出 YAML" })).toBeEnabled()
     );
   });
 
@@ -348,8 +348,8 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "真实 AI 生成剧本" }));
 
-    fireEvent.click(await screen.findByRole("button", { name: "Contract" }));
-    const editor = screen.getByLabelText("Edited YAML");
+    fireEvent.click(await screen.findByRole("button", { name: "03 / YAML 合约" }));
+    const editor = screen.getByLabelText("编辑中的 YAML");
     const editedYaml = stringify({
       ...successResponse.screenplay,
       metadata: {
@@ -362,7 +362,7 @@ describe("App", () => {
       target: { value: editedYaml }
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Export YAML" }));
+    fireEvent.click(screen.getByRole("button", { name: "导出 YAML" }));
 
     expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
     const blob = vi.mocked(URL.createObjectURL).mock.calls[0]?.[0];

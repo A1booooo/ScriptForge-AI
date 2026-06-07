@@ -20,6 +20,8 @@ import { RewriteSuggestionsPanel } from "./RewriteSuggestionsPanel";
 import { SceneBoardPanel } from "./SceneBoardPanel";
 import { ValidationResultPanel } from "./ValidationResultPanel";
 import { YamlPreviewPanel } from "./YamlPreviewPanel";
+import { getYamlValidationStatus } from "../lib/yamlValidationStatus";
+
 
 interface ConversionResultWorkbenchProps {
   result: ConversionResponse;
@@ -71,6 +73,12 @@ export function ConversionResultWorkbench({
     [adaptationQualityScore, chapterAnalysis, result.screenplay]
   );
 
+  const validationStatus = useMemo(
+    () => getYamlValidationStatus(validationResult),
+    [validationResult]
+  );
+
+
   const [activeSection, setActiveSection] = useState<
     "overview" | "analysis" | "contract" | "draft-view"
   >("overview");
@@ -97,7 +105,7 @@ export function ConversionResultWorkbench({
           aria-selected={activeSection === "overview"}
         >
           <FileText className="w-3.5 h-3.5" />
-          Overview
+          01 / 结果概览
         </button>
         <button
           type="button"
@@ -106,7 +114,7 @@ export function ConversionResultWorkbench({
           aria-selected={activeSection === "analysis"}
         >
           <BarChart2 className="w-3.5 h-3.5" />
-          Analysis
+          02 / 结构分析
         </button>
         <button
           type="button"
@@ -115,7 +123,7 @@ export function ConversionResultWorkbench({
           aria-selected={activeSection === "contract"}
         >
           <ShieldCheck className="w-3.5 h-3.5" />
-          Contract
+          03 / YAML 合约
         </button>
         <button
           type="button"
@@ -124,7 +132,7 @@ export function ConversionResultWorkbench({
           aria-selected={activeSection === "draft-view"}
         >
           <AlignLeft className="w-3.5 h-3.5" />
-          Draft View
+          04 / 草稿视图
         </button>
       </nav>
 
@@ -134,9 +142,9 @@ export function ConversionResultWorkbench({
         {activeSection === "overview" && (
           <section id="overview" className="animate-view-fade-in space-y-4">
             <div className="border-b border-[var(--line-soft)] pb-2">
-              <p className="section-kicker">01 / Overview</p>
+              <p className="section-kicker">01 / 结果概览</p>
               <h3 className="text-lg font-bold text-[var(--text-strong)] mt-0.5">
-                Conversion summary and adaptation readiness
+                转换摘要与改编就绪度评估
               </h3>
             </div>
             <div className="result-overview-grid">
@@ -150,9 +158,9 @@ export function ConversionResultWorkbench({
         {activeSection === "analysis" && (
           <section id="analysis" className="animate-view-fade-in space-y-4">
             <div className="border-b border-[var(--line-soft)] pb-2">
-              <p className="section-kicker">02 / Analysis</p>
+              <p className="section-kicker">02 / 结构分析</p>
               <h3 className="text-lg font-bold text-[var(--text-strong)] mt-0.5">
-                章节分析 and rewrite guidance
+                剧本结构分析与规则建议
               </h3>
             </div>
             <div className="studio-report-panel flex flex-col gap-8">
@@ -166,14 +174,15 @@ export function ConversionResultWorkbench({
         {activeSection === "contract" && (
           <section id="contract" className="animate-view-fade-in space-y-4">
             <div className="border-b border-[var(--line-soft)] pb-2">
-              <p className="section-kicker">03 / Contract</p>
+              <p className="section-kicker">03 / YAML 合约</p>
               <h3 className="text-lg font-bold text-[var(--text-strong)] mt-0.5">
-                YAML 合约, validation, and preview checks
+                YAML 合约、校验与结构校验
               </h3>
             </div>
             <div className="space-y-6">
               <div className="yaml-dark-editor">
                 <YamlPreviewPanel
+                  validationStatus={validationStatus}
                   canExport={validationResult.ok}
                   editedYaml={editedYaml}
                   generatedYaml={generatedYaml}
@@ -196,9 +205,9 @@ export function ConversionResultWorkbench({
         {activeSection === "draft-view" && (
           <section id="draft-view" className="animate-view-fade-in space-y-4">
             <div className="border-b border-[var(--line-soft)] pb-2">
-              <p className="section-kicker">04 / Draft View</p>
+              <p className="section-kicker">04 / 草稿视图</p>
               <h3 className="text-lg font-bold text-[var(--text-strong)] mt-0.5">
-                场景板 as the main reading surface, with 角色档案 as support
+                以场景板为主的阅读页面与角色档案支持
               </h3>
             </div>
             <div className="grid gap-8 grid-cols-1 lg:grid-cols-12">

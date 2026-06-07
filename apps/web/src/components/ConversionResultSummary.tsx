@@ -1,5 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import type { ConversionResponse } from "../types";
+import { getResultSourceLabel } from "../lib/conversionSource";
 
 interface ConversionResultSummaryProps {
   result: ConversionResponse;
@@ -9,30 +10,30 @@ export function ConversionResultSummary({ result }: ConversionResultSummaryProps
   return (
     <div className="bg-[var(--bg-paper)] border border-[var(--line-soft)] rounded-[0.25rem] p-6 shadow-[var(--shadow-soft)]">
       <div className="space-y-2 border-b border-[var(--line-soft)] pb-4">
-        <p className="section-kicker">Conversion Ready</p>
+        <p className="section-kicker">剧本草稿已就绪</p>
         <h4 className="text-lg font-bold text-[var(--text-strong)]">
           结构化剧本草稿已生成
         </h4>
         <p className="text-xs text-[var(--text-muted)]">
-          The generated draft, YAML contract, and draft references are now ready for review.
+          结构化剧本草稿已生成，YAML 合约和各项检查已就绪。
         </p>
       </div>
 
       <dl className="mt-4 grid gap-4 grid-cols-2 md:grid-cols-4 border-b border-[var(--line-soft)] pb-4">
         <div>
-          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Conversion ID</dt>
+          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">转换 ID</dt>
           <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)]">{result.conversion_id}</dd>
         </div>
         <div>
-          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Source</dt>
-          <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)]">{result.source}</dd>
+          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">数据来源</dt>
+          <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)]">{getResultSourceLabel(result.source)}</dd>
         </div>
         <div>
-          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Chapter Count</dt>
+          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">源章节数</dt>
           <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)]">{result.input_summary.chapter_count}</dd>
         </div>
         <div>
-          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Screenplay Title</dt>
+          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">剧本标题</dt>
           <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)] truncate">{result.screenplay.metadata.title}</dd>
         </div>
       </dl>
@@ -42,7 +43,7 @@ export function ConversionResultSummary({ result }: ConversionResultSummaryProps
           <AlertTriangle className="w-4 h-4 text-[#996a14] flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-[10px] font-bold tracking-wider text-[#996a14] uppercase">
-              Response notes
+              生成提示
             </p>
             <ul className="mt-2 space-y-1 text-xs text-[#76572a] list-disc list-inside">
               {result.warnings.map((warning) => (

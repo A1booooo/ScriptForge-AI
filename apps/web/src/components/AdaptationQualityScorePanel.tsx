@@ -36,7 +36,7 @@ function translateConflictClarityReason(reason: string): string {
   let text = reason;
   text = text.replace("Every generated scene currently includes an explicit conflict field.", "每个生成的场景当前都包含明确的冲突字段。");
   text = text.replace(/(\d+) generated scene\(s\) currently lack a scene conflict field\./, "$1 个生成的场景当前缺少场景冲突字段。");
-  text = text.replace(/T10 Chapter Analyzer still flags (\d+) missing conflicts from deterministic source-to-draft checks\./, "T10 章节分析器在确定性源到草稿校验中仍标记了 $1 个缺失的冲突。");
+  text = text.replace(/T10 Chapter Analyzer still flags (\d+) missing conflicts from deterministic source-to-draft checks\./, "章节分析器在确定性源到草稿校验中仍标记了 $1 个缺失的冲突。");
   return text;
 }
 
@@ -47,7 +47,7 @@ function translateSchemaCompletenessReason(reason: string): string {
   const match = reason.match(/The current validation state reports (\d+) issue\(s\), including (\d+) error\(s\) and (\d+) warning\(s\)\./);
   if (match) {
     const [, total, errors, warnings] = match;
-    return `当前校验状态报告了 ${total} 个问题，包括 ${errors} 个错误和 ${warnings} 个警告。`;
+    return `当前校验状态报告了 ${total} 个问题，包括 ${errors} 个错误 and ${warnings} 个警告。`;
   }
   return reason;
 }
@@ -73,17 +73,11 @@ export function AdaptationQualityScorePanel({
   const percent = score?.overall?.score ?? 0;
   const dashArray = `${percent}, 100`;
 
-  const title = score?.title === "Adaptation Quality Score" ? "改编质量评分" : (score?.title ?? "改编质量评分");
-  const badgeLabel = score?.badgeLabel === "Deterministic Demo score" ? "确定性 Demo 评分" : (score?.badgeLabel ?? "确定性 Demo 评分");
-  const overallLabel = score?.overall?.label === "Readiness / Quality Score" ? "就绪度 / 质量评分" : (score?.overall?.label ?? "就绪度 / 质量评分");
-  
-  const description = score?.description === "Rule-based readiness and quality signal. Derived from generated draft structure, T10 Chapter Analyzer signals, and the current YAML validation state. This is not a real LLM quality judgment."
-    ? "基于规则的就绪度和质量信号。从生成的剧本结构、T10 章节分析器信号以及当前的 YAML 校验状态中提取。这并非真实的 LLM 质量评估。"
-    : (score?.description ?? "");
-
-  const overallReason = score?.overall?.reason === "This overall score is a deterministic Demo readiness signal based on generated draft structure, T10 Chapter Analyzer signals, and the current YAML validation state."
-    ? "此总评分是基于生成的剧本草稿结构、T10 章节分析器信号和当前 YAML 校验状态的确定性 Demo 就绪度信号。"
-    : (score?.overall?.reason ?? "");
+  const title = score?.title ?? "结构评分";
+  const badgeLabel = score?.badgeLabel ?? "结构就绪度评分";
+  const overallLabel = score?.overall?.label ?? "结构就绪度";
+  const description = score?.description ?? "";
+  const overallReason = score?.overall?.reason ?? "";
 
   const dimensions = score?.dimensions ?? [];
 
