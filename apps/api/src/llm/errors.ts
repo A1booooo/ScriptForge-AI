@@ -4,7 +4,9 @@ export type LlmErrorCode =
   | "missing_api_key"
   | "invalid_provider"
   | "request_failed"
+  | "rate_limited"
   | "provider_response_invalid"
+  | "schema_validation_failed"
   | "timeout";
 
 export class LlmClientError extends Error {

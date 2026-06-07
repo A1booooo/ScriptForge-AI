@@ -24,7 +24,7 @@ export function AdaptationModeSelector({
           改编模式
         </label>
         <span className="text-xs text-[var(--text-muted)]">
-          仅使用 T03 Mock API
+          接入真实 LLM 主链路
         </span>
       </div>
       <div className="relative">

@@ -154,6 +154,43 @@ describe("createOpenAiCompatibleClient", () => {
     ).rejects.not.toThrow(/top-secret-key|authorization/i);
   });
 
+  it("maps 429 responses to a structured rate-limited error", async () => {
+    const client = createOpenAiCompatibleClient(
+      {
+        provider: "openai_compatible",
+        model: "test-model",
+        apiKey: "top-secret-key",
+        baseUrl: "https://example.test/v1",
+        timeoutMs: 5000
+      },
+      {
+        fetchImplementation: async () =>
+          new Response(
+            JSON.stringify({
+              error: {
+                message: "Too many requests."
+              }
+            }),
+            {
+              status: 429,
+              headers: {
+                "content-type": "application/json"
+              }
+            }
+          )
+      }
+    );
+
+    await expect(
+      client.generateDraft({
+        prompt: "Prompt"
+      })
+    ).rejects.toMatchObject({
+      code: "rate_limited",
+      status: 429
+    });
+  });
+
   it("aborts timed out requests and maps them to a structured timeout error", async () => {
     const client = createOpenAiCompatibleClient(
       {

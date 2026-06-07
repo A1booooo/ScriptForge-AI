@@ -1,25 +1,17 @@
-import { Info, AlertTriangle } from "lucide-react";
-import {
-  DEMO_SAMPLE_BADGE_LABEL,
-  DEMO_SAMPLE_NOTE
-} from "../lib/demoFixtures";
-import type { MockConversionResponse } from "../types";
+import { AlertTriangle } from "lucide-react";
+import type { ConversionResponse } from "../types";
 
 interface ConversionResultSummaryProps {
-  isDemoSample: boolean;
-  result: MockConversionResponse;
+  result: ConversionResponse;
 }
 
-export function ConversionResultSummary({
-  isDemoSample,
-  result
-}: ConversionResultSummaryProps) {
+export function ConversionResultSummary({ result }: ConversionResultSummaryProps) {
   return (
     <div className="bg-[var(--bg-paper)] border border-[var(--line-soft)] rounded-[0.25rem] p-6 shadow-[var(--shadow-soft)]">
       <div className="space-y-2 border-b border-[var(--line-soft)] pb-4">
         <p className="section-kicker">Conversion Ready</p>
         <h4 className="text-lg font-bold text-[var(--text-strong)]">
-          Mock screenplay draft generated
+          结构化剧本草稿已生成
         </h4>
         <p className="text-xs text-[var(--text-muted)]">
           The generated draft, YAML contract, and draft references are now ready for review.
@@ -32,8 +24,8 @@ export function ConversionResultSummary({
           <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)]">{result.conversion_id}</dd>
         </div>
         <div>
-          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Mock State</dt>
-          <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)]">{result.mock ? "Yes" : "No"}</dd>
+          <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Source</dt>
+          <dd className="mt-1 text-sm font-semibold text-[var(--text-strong)]">{result.source}</dd>
         </div>
         <div>
           <dt className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">Chapter Count</dt>
@@ -45,26 +37,12 @@ export function ConversionResultSummary({
         </div>
       </dl>
 
-      {isDemoSample && (
-        <div className="mt-4 rounded-[0.25rem] border border-[rgba(216,155,43,0.32)] bg-[rgba(216,155,43,0.04)] p-4 flex gap-2">
-          <Info className="w-4 h-4 text-[#996a14] flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-[10px] font-bold tracking-wider text-[#996a14] uppercase">
-              {DEMO_SAMPLE_BADGE_LABEL}
-            </p>
-            <p className="mt-1 text-xs text-[#76572a]">
-              {DEMO_SAMPLE_NOTE}
-            </p>
-          </div>
-        </div>
-      )}
-
       {result.warnings.length > 0 && (
         <div className="mt-4 rounded-[0.25rem] border border-[rgba(216,155,43,0.32)] bg-[rgba(216,155,43,0.04)] p-4 flex gap-2">
           <AlertTriangle className="w-4 h-4 text-[#996a14] flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-[10px] font-bold tracking-wider text-[#996a14] uppercase">
-              Mock response notes
+              Response notes
             </p>
             <ul className="mt-2 space-y-1 text-xs text-[#76572a] list-disc list-inside">
               {result.warnings.map((warning) => (

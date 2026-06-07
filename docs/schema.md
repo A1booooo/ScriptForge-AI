@@ -720,6 +720,13 @@ quality_hints:
 - 明确将结果标记为 mock output 的 warning strings
 - 一个基于 shared `sampleScreenplay` contract，并结合请求 metadata 局部改写得到的 screenplay 对象
 
+补充说明：
+
+- 当前真实用户主流程已改为 `POST /api/conversions/real`。
+- 真实 LLM conversion 的 provider 返回文本也不会被直接信任。
+- 后端会先提取 JSON object，再经过 shared schema validation 与 consistency checks。
+- 只有校验通过后，结果才会作为 `ScreenplayDocument` 返回给前端。
+
 这对 schema 文档的含义是：
 
 - schema 描述的是当前结构化 draft contract

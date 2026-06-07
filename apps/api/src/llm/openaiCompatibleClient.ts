@@ -104,7 +104,7 @@ export function createOpenAiCompatibleClient(
 
         if (!response.ok) {
           throw new LlmClientError(
-            "request_failed",
+            response.status === 429 ? "rate_limited" : "request_failed",
             `LLM request failed with status ${response.status}.`,
             { status: response.status }
           );

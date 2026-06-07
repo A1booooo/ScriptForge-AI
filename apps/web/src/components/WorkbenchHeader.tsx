@@ -25,13 +25,13 @@ export function WorkbenchHeader() {
           <p className="section-kicker">Product Narrative</p>
           <div className="mt-3 space-y-3 text-sm leading-6 text-[var(--text-muted)] font-body">
             <p className="font-semibold text-[var(--text-strong)]">
-              T04：章节输入工作台 · Mock API
+              T15：真实 LLM 转换工作台
             </p>
             <p>
-              本系统当前为本地 Mock API 演示链路，尚未接入真实大语言模型 (LLM)。
+              当前主链路已接入真实 LLM conversion，生成结果会先经过 shared schema 校验与一致性检查。
             </p>
             <p className="text-xs text-[var(--text-muted)] border-t border-[var(--line-soft)] pt-2 mt-2">
-              Enter at least three source chapters, choose an adaptation mode, and generate a local mock screenplay workspace.
+              Enter at least three source chapters, choose an adaptation mode, and generate a structured screenplay draft through the real LLM flow.
             </p>
           </div>
         </div>
